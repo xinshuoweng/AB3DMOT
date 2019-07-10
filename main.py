@@ -303,7 +303,7 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold=0.1):
   return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
 
 
-class SB3DMOT(object):
+class AB3DMOT(object):
   def __init__(self,max_age=2,min_hits=3):      # max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
   # def __init__(self,max_age=3,min_hits=3):        # ablation study
   # def __init__(self,max_age=1,min_hits=3):      
@@ -393,7 +393,7 @@ if __name__ == '__main__':
   eval_dir = os.path.join(save_dir, 'data'); mkdir_if_missing(eval_dir)
   for seq_file in seq_file_list:
     _, seq_name, _ = fileparts(seq_file)
-    mot_tracker = SB3DMOT() 
+    mot_tracker = AB3DMOT() 
     seq_dets = np.loadtxt(seq_file, delimiter=',') #load detections
     eval_file = os.path.join(eval_dir, seq_name + '.txt'); eval_file = open(eval_file, 'w')
     save_trk_dir = os.path.join(save_dir, 'trk_withid', seq_name); mkdir_if_missing(save_trk_dir)
