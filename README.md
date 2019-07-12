@@ -96,3 +96,7 @@ Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard
  Method         | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
  *Ours*         | 83.34    |  85.23  | 65.85  | 11.54  |  10 | 222  | 214.7
+ 
+ 
+## Acknowledgement
+Part of the code is borrowed from "[SORT](https://github.com/abewley/sort)"
