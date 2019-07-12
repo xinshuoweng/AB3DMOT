@@ -6,14 +6,14 @@ This repository contains the official python implementation for "[A Baseline for
 
 ```
 @article{Weng2019_3dmot, 
-archivePrefix = {arXiv}, 
-arxivId = {1907.03961}, 
-author = {Weng, Xinshuo and Kitani, Kris}, 
-eprint = {1907.03961}, 
-journal = {arXiv:1907.03961}, 
-title = {{A Baseline for 3D Multi-Object Tracking}}, 
-url = {https://arxiv.org/pdf/1907.03961.pdf}, 
-year = {2019} 
+  archivePrefix = {arXiv}, 
+  arxivId = {1907.03961}, 
+  author = {Weng, Xinshuo and Kitani, Kris}, 
+  eprint = {1907.03961}, 
+  journal = {arXiv:1907.03961}, 
+  title = {{A Baseline for 3D Multi-Object Tracking}}, 
+  url = {https://arxiv.org/pdf/1907.03961.pdf}, 
+  year = {2019} 
 }
 ```
 
