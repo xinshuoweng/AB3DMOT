@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+from __future__ import print_function
 import matplotlib; matplotlib.use('Agg')
 import sys, os, copy, math, numpy as np, matplotlib.pyplot as plt
 from munkres import Munkres
@@ -172,9 +173,9 @@ class trackingEvaluation(object):
         
         self.eval_dir = os.path.join("./results/", self.t_sha, "eval", self.cls)
         if not os.path.exists(self.eval_dir):
-            print "create directory:", self.eval_dir,
+            print("create directory:", self.eval_dir, end=' ')
             os.makedirs(self.eval_dir)
-            print "done"
+            print("done")
 
     def loadGroundtruth(self):
         """
@@ -272,7 +273,7 @@ class trackingEvaluation(object):
                 idx = t_data.frame
                 # check if length for frame data is sufficient
                 if idx >= len(f_data):
-                    print "extend f_data", idx, len(f_data)
+                    print("extend f_data", idx, len(f_data))
                     f_data += [[] for x in xrange(max(500, idx-len(f_data)))]
                 try:
                     id_frame = (t_data.frame,t_data.track_id)
@@ -285,7 +286,7 @@ class trackingEvaluation(object):
                     id_frame_cache.append(id_frame)
                     f_data[t_data.frame].append(copy.copy(t_data))
                 except:
-                    print len(f_data), idx
+                    print(len(f_data), idx)
                     raise
 
                 if t_data.track_id not in ids and t_data.obj_type!="dontcare":
@@ -691,28 +692,28 @@ class trackingEvaluation(object):
                 #   nignoredpairs is subtracted here to avoid double counting
                 #   of ignored detection sin nignoredtp and nignoredtracker
                 if tmptp<0:
-                    print tmptp, nignoredtp
+                    print(tmptp, nignoredtp)
                     raise NameError("Something went wrong! TP is negative")
                 if tmpfn<0:
-                    print tmpfn, len(g), len(association_matrix), ignoredfn, nignoredpairs
+                    print(tmpfn, len(g), len(association_matrix), ignoredfn, nignoredpairs)
                     raise NameError("Something went wrong! FN is negative")
                 if tmpfp<0:
-                    print tmpfp, len(t), tmptp, nignoredtracker, nignoredtp, nignoredpairs
+                    print(tmpfp, len(t), tmptp, nignoredtracker, nignoredtp, nignoredpairs)
                     raise NameError("Something went wrong! FP is negative")
                 if tmptp + tmpfn is not len(g)-ignoredfn-nignoredtp:
-                    print "seqidx", seq_idx
-                    print "frame ", f
-                    print "TP    ", tmptp
-                    print "FN    ", tmpfn
-                    print "FP    ", tmpfp
-                    print "nGT   ", len(g)
-                    print "nAss  ", len(association_matrix)
-                    print "ign GT", ignoredfn
-                    print "ign TP", nignoredtp
+                    print("seqidx", seq_idx)
+                    print("frame ", f)
+                    print("TP    ", tmptp)
+                    print("FN    ", tmpfn)
+                    print("FP    ", tmpfp)
+                    print("nGT   ", len(g))
+                    print("nAss  ", len(association_matrix))
+                    print("ign GT", ignoredfn)
+                    print("ign TP", nignoredtp)
                     raise NameError("Something went wrong! nGroundtruth is not TP+FN")
                 if tmptp+tmpfp+nignoredtp+nignoredtracker-nignoredpairs is not len(t):
-                    print seq_idx, f, len(t), tmptp, tmpfp
-                    print len(association_matrix), association_matrix
+                    print(seq_idx, f, len(t), tmptp, tmpfp)
+                    print(len(association_matrix), association_matrix)
                     raise NameError("Something went wrong! nTracker is not TP+FP")
 
                 # check for id switches or Fragmentations               
@@ -962,7 +963,7 @@ class trackingEvaluation(object):
         if threshold is None: summary = self.createSummary_details()
         else: summary = self.createSummary_simple(threshold)
         mail.msg(summary)       # mail or print the summary.
-        print>>dump, summary
+        print(summary, file=dump)
 
 class stat:
     """
@@ -1030,7 +1031,7 @@ class stat:
         summary += '{:.4f} {:.4f} {:.4f}\n'.format( \
             self.ave_mota, self.ave_motp, self.ave_precision) 
         summary += "="*80
-        print>>self.dump, summary
+        print(summary, file=self.dump)
         
         return summary
 
@@ -1171,7 +1172,7 @@ if __name__ == "__main__":
     # check for correct number of arguments. if user_sha and email are not supplied,
     # no notification email is sent (this option is used for auto-updates)
     if len(sys.argv)!=2 and len(sys.argv)!=3:
-      print "Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)"
+      print("Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)")
       sys.exit(1);
 
     # get unique sha key of submitted results
@@ -1184,7 +1185,7 @@ if __name__ == "__main__":
         elif sys.argv[2] == '3D':
             eval_3diou, eval_2diou = True, False        # eval 3d
         else:
-            print "Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)"
+            print("Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)")
             sys.exit(1);            
     else:
         eval_3diou, eval_2diou = True, False        # eval 3d
