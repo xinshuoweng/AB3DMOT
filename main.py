@@ -223,16 +223,31 @@ class KalmanBoxTracker(object):
     if self.still_first:
       self.first_continuing_hit += 1      # number of continuing hit in the fist time
     
-    # orientation correction
+    ######################### orientation correction
+    if self.kf.x[3] >= np.pi: self.kf.x[3] -= np.pi * 2    # make the theta still in the range
+    if self.kf.x[3] < -np.pi: self.kf.x[3] += np.pi * 2
+
     new_theta = bbox3D[3]
+    if new_theta >= np.pi: new_theta -= np.pi * 2    # make the theta still in the range
+    if new_theta < -np.pi: new_theta += np.pi * 2
+    bbox3D[3] = new_theta
+
     predicted_theta = self.kf.x[3]
-    if abs(new_theta - predicted_theta) > np.pi / 2.0:
-      # bbox3D[3] = -1 * bbox3D[3]            # follow the state of trajectory
-      self.kf.x[3] = -1 * self.kf.x[3]        # follow the measurement
+    if abs(new_theta - predicted_theta) > np.pi / 2.0 and abs(new_theta - predicted_theta) < np.pi * 3 / 2.0:     # if the angle of two theta is not acute angle
+      self.kf.x[3] += np.pi       
+      if self.kf.x[3] > np.pi: self.kf.x[3] -= np.pi * 2    # make the theta still in the range
+      if self.kf.x[3] < -np.pi: self.kf.x[3] += np.pi * 2
+      
+      # now the angle is acute: < 90 or > 270, convert the case of > 270 to < 90
+      if abs(new_theta - self.kf.x[3]) >= np.pi * 3 / 2.0:
+        if new_theta > 0: self.kf.x[3] += np.pi * 2
+        else: self.kf.x[3] -= np.pi * 2
+    
+    ######################### 
 
     self.kf.update(bbox3D)
-  
-    if self.kf.x[3] > np.pi: self.kf.x[3] -= np.pi * 2    # make the theta still in the range
+
+    if self.kf.x[3] >= np.pi: self.kf.x[3] -= np.pi * 2    # make the theta still in the range
     if self.kf.x[3] < -np.pi: self.kf.x[3] += np.pi * 2
     self.info = info
 
@@ -241,7 +256,7 @@ class KalmanBoxTracker(object):
     Advances the state vector and returns the predicted bounding box estimate.
     """
     self.kf.predict()      
-    if self.kf.x[3] > np.pi: self.kf.x[3] -= np.pi * 2
+    if self.kf.x[3] >= np.pi: self.kf.x[3] -= np.pi * 2
     if self.kf.x[3] < -np.pi: self.kf.x[3] += np.pi * 2
 
     self.age += 1
