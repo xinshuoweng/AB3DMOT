@@ -85,6 +85,8 @@ To reproduce the qualitative results of our 3D MOT system shown in the paper:
 
 Then, the visualization results are saved to ./results/3d_det_test_thres/trk_image_vis. If one wants to visualize the results on the entire sequences, please first download the KITTI MOT dataset at http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image/calibration files to the './data/KITTI' folder.
 
+In addition, one can check out our demo for viusualization in full_demo.mp4
+
 
 ### 3D Multi-Object Tracking (2D MOT Evaluation):
 To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
