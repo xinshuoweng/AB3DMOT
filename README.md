@@ -66,11 +66,11 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   ```
   $ python2 evaluation/evaluate_kitti3dmot.py 3d_det_val
   ```
-Then, the results should be exactly same as below, except for the FPS which depends on the individual machine.
+Then, the results should be exactly same as below, except for the FPS which depends on the individual machine. Note that the results are a little bit better than results in the paper.
 
  Method         | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:---------:|:---------:|:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
- *Ours*         | 39.44     | 74.60     | 76.47    |  78.98  |  69.86 | 7.27   |  0  | 58   | 207.4
+ *Ours*         | 39.49     | 74.48     | 76.54    |  78.81  |  69.86 | 7.27   |  0  | 50   | 207.4
 
 ### 3D Multi-Object Tracking (Visualization):
 
