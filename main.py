@@ -238,10 +238,10 @@ class KalmanBoxTracker(object):
       if self.kf.x[3] > np.pi: self.kf.x[3] -= np.pi * 2    # make the theta still in the range
       if self.kf.x[3] < -np.pi: self.kf.x[3] += np.pi * 2
       
-      # now the angle is acute: < 90 or > 270, convert the case of > 270 to < 90
-      if abs(new_theta - self.kf.x[3]) >= np.pi * 3 / 2.0:
-        if new_theta > 0: self.kf.x[3] += np.pi * 2
-        else: self.kf.x[3] -= np.pi * 2
+    # now the angle is acute: < 90 or > 270, convert the case of > 270 to < 90
+    if abs(new_theta - self.kf.x[3]) >= np.pi * 3 / 2.0:
+      if new_theta > 0: self.kf.x[3] += np.pi * 2
+      else: self.kf.x[3] -= np.pi * 2
     
     ######################### 
 
