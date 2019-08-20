@@ -70,7 +70,7 @@ Then, the results should be exactly same as below, except for the FPS which depe
 
  Method         | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:---------:|:---------:|:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
- *Ours*         | 39.49     | 74.48     | 76.54    |  78.81  |  69.86 | 7.27   |  0  | 50   | 207.4
+ *Ours*         | 39.48     | 74.67     | 76.57    |  79.16  |  70.04 | 7.27   |  0  | 50   | 207.4
 
 ### 3D Multi-Object Tracking (Visualization):
 
