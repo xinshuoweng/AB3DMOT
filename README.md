@@ -85,7 +85,7 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   ```
 Then, the results should be exactly same as below, except for the FPS which depends on the individual machine. Note that the results are a little bit better than results in the paper.
 
- Method         | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
+ Category       | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:---------:|:---------:|:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
  *Car*          | 39.48     | 74.67     | 76.57    |  79.16  |  70.04 | 7.27   |  0  | 50   | 207.4
  *Pedestrian*   | 25.21     | 49.69     | 61.19    |  67.00  |  36.53 | 39.52  |  0  | 63   | 436.6
@@ -114,7 +114,7 @@ To reproduce the quantitative results of our 3D MOT system using the official KI
   ```
 Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard: 
 
- Method         | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
+ Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
  *Car*          | 83.84    |  85.23  | 66.92  | 11.38  |  9  | 224  | 214.7
  
