@@ -1089,7 +1089,7 @@ def evaluate(result_sha,mail,eval_3diou,eval_2diou):
     else:
         assert False, 'error'
     classes = []
-    for c in ("car", "pedestrian"):
+    for c in ("car", "pedestrian", "cyclist"):
     # for c in ("car"):
         e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou)
         # load tracker data and check provided classes

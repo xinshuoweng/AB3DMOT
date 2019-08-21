@@ -77,7 +77,7 @@ if __name__ == "__main__":
 		print("No image data is provided for %s, please download the KITTI dataset" % split)
 		sys.exit(1)
 	elif 'test' in result_sha:
-		data_root = './data/KITTI/test'
+		data_root = './data/KITTI/resources'
 	else:
 		print("No image data is provided for %s, please download the KITTI dataset" % split)
 		sys.exit(1)
