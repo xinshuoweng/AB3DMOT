@@ -25,6 +25,7 @@ This repository contains the official python implementation for "[A Baseline for
 - [Acknowledgement](#acknowledgement)
 
 ## News
+- Aug. 21, 2019: Results on KITTI "pedestrian" and "cyclist" released.
 - Aug. 19, 2019: A bug in orientation correction fixed.
 - Jul. 9, 2019: Code and results on KITTI "car" split released.
 
