@@ -21,7 +21,7 @@ This repository contains the official python implementation for "[A Baseline for
 - [Introduction](#introduction)
 - [Dependencies](#dependencies)
 - [3D Object Detection](#3d-object-detection)
-- [3D Multi-Object Tracking (Inference)](#3d-multi-object-tracking-(inference))
+- [3D Multi Object Tracking (Inference)](#3d-multi-object-tracking-(inference))
 - [3D Multi-Object Tracking (3D MOT Evaluation)](#3d-multi-object-tracking-(3d-mot-evaluation))
 - [3D Multi-Object Tracking (Visualization)](#3d-multi-object-tracking-(visualization))
 - [3D Multi-Object Tracking (2D MOT Evaluation)](#3d-multi-object-tracking-(2d-mot-evaluation))
