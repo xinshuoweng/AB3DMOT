@@ -109,7 +109,7 @@ In addition, one can check out our demo for viusualization in full_demo.mp4
 
 
 ### 2D MOT Evaluation
-To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
+To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
   $ ./results/car_3d_det_test_thres/data
   ```
