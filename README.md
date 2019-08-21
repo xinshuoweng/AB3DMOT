@@ -71,7 +71,7 @@ $ python2 main.py 3d_det_test
 ```
 Then, the results will be saved to ./results folder. Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
 
-#### 3D MOT Evaluation
+### 3D MOT Evaluation
 
 To reproduce the quantitative results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
   ```
@@ -83,7 +83,7 @@ Then, the results should be exactly same as below, except for the FPS which depe
 --------------- |:---------:|:---------:|:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
  *Ours*         | 39.48     | 74.67     | 76.57    |  79.16  |  70.04 | 7.27   |  0  | 50   | 207.4
 
-#### Visualization
+### Visualization
 
 To reproduce the qualitative results of our 3D MOT system shown in the paper:
 
@@ -99,7 +99,7 @@ Then, the visualization results are saved to ./results/3d_det_test_thres/trk_ima
 In addition, one can check out our demo for viusualization in full_demo.mp4
 
 
-#### 2D MOT Evaluation
+### 2D MOT Evaluation
 To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
   $ ./results/3d_det_test_thres/data
