@@ -163,8 +163,8 @@ class trackingEvaluation(object):
         
         # this should be enough to hold all groundtruth trajectories
         # is expanded if necessary and reduced in any case
-        self.gt_trajectories            = [[] for x in xrange(self.n_sequences)]
-        self.ign_trajectories           = [[] for x in xrange(self.n_sequences)]
+        self.gt_trajectories            = [[] for x in range(self.n_sequences)]
+        self.ign_trajectories           = [[] for x in range(self.n_sequences)]
 
     def createEvalDir(self):
         """
@@ -220,7 +220,7 @@ class trackingEvaluation(object):
             filename       = os.path.join(root_dir, "%s.txt" % s_name)
             f              = open(filename, "r")
 
-            f_data         = [[] for x in xrange(self.n_frames[seq])] # current set has only 1059 entries, sufficient length is checked anyway
+            f_data         = [[] for x in range(self.n_frames[seq])] # current set has only 1059 entries, sufficient length is checked anyway
             ids            = []
             n_in_seq       = 0
             id_frame_cache = []
@@ -274,7 +274,7 @@ class trackingEvaluation(object):
                 # check if length for frame data is sufficient
                 if idx >= len(f_data):
                     print("extend f_data", idx, len(f_data))
-                    f_data += [[] for x in xrange(max(500, idx-len(f_data)))]
+                    f_data += [[] for x in range(max(500, idx-len(f_data)))]
                 try:
                     id_frame = (t_data.frame,t_data.track_id)
                     if id_frame in id_frame_cache and not loading_groundtruth:
@@ -403,8 +403,8 @@ class trackingEvaluation(object):
         self.PT                = 0
         self.ML                = 0
         
-        self.gt_trajectories            = [[] for x in xrange(self.n_sequences)]
-        self.ign_trajectories           = [[] for x in xrange(self.n_sequences)]
+        self.gt_trajectories            = [[] for x in range(self.n_sequences)]
+        self.ign_trajectories           = [[] for x in range(self.n_sequences)]
 
         return 
 

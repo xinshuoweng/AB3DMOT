@@ -575,7 +575,10 @@ class Munkres:
 
     def __find_smallest(self):
         """Find the smallest uncovered value in the matrix."""
-        minval = sys.maxint
+        try:
+            minval = sys.maxint
+        except AttributeError:
+            minval = sys.maxsize
         for i in range(self.n):
             for j in range(self.n):
                 if (not self.row_covered[i]) and (not self.col_covered[j]):

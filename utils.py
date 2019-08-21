@@ -15,30 +15,20 @@ def islogical(logical_test):
 def isnparray(nparray_test):
 	return isinstance(nparray_test, np.ndarray)
 
-def istuple(tuple_test):
-	return isinstance(tuple_test, tuple)
+# def istuple(tuple_test):
+# 	return isinstance(tuple_test, tuple)
 
-def isfunction(func_test):
-	return callable(func_test)
+# def isfunction(func_test):
+# 	return callable(func_test)
 
-def isdict(dict_test):
-	return isinstance(dict_test, dict)
+# def isdict(dict_test):
+# 	return isinstance(dict_test, dict)
 
-def isext(ext_test):
-	'''
-	check if it is an extension, only '.something' is an extension, multiple extension is not a valid extension
-	'''
-	return isstring(ext_test) and ext_test[0] == '.' and len(ext_test) > 1 and ext_test.count('.') == 1
-
-def isrange(range_test):
-	'''
-	check if it is a data range: such as [0, 1], (0, 1), array([0, 1]), the min must not bigger than the max
-	'''
-	return is2dpts(range_test) and range_test[0] <= range_test[1]
-
-def isscalar(scalar_test):
-	try: return isinteger(scalar_test) or isfloat(scalar_test)
-	except TypeError: return False
+# def isext(ext_test):
+# 	'''
+# 	check if it is an extension, only '.something' is an extension, multiple extension is not a valid extension
+# 	'''
+# 	return isstring(ext_test) and ext_test[0] == '.' and len(ext_test) > 1 and ext_test.count('.') == 1
 
 def isinteger(integer_test):
 	if isnparray(integer_test): return False
@@ -228,8 +218,6 @@ def load_list_from_folder(folder_path, ext_filter=None, depth=1, recursive=False
         file.close()
 
     return fulllist, num_elem
-
-
 
 ###################################################### visualization
 def random_colors(N, bright=True):
