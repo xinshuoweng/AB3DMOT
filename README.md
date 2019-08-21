@@ -16,12 +16,12 @@ This repository contains the official python implementation for "[A Baseline for
   year = {2019} 
 }
 ```
-## Overview
+# Overview
 - [News](#news)
 - [Introduction](#introduction)
 - [Dependencies](#dependencies)
 - [3D Object Detection](#3d-object-detection)
-- [3D Multi Object Tracking](#3d-multi-object-tracking)
+- [3D Multi-Object Tracking](#3d-multi-object-tracking)
 - [Acknowledgement](#acknowledgement)
 
 ## News
@@ -56,7 +56,7 @@ $ pip2 install -r requirements.txt
 ## 3D Object Detection:
 For convenience, we provide the 3D detection of the PointRCNN on the KITTI MOT dataset at ./data/KITTI/3d_det_val (for validation set) and ./data/KITTI/3d_det_test (for test set).
 
-## 3D Multi Object Tracking
+## 3D Multi-Object Tracking
 
 ### Inference
 To run our tracker on the validation set with the provided detection:
