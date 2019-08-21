@@ -117,7 +117,7 @@ Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard
 
  Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
- *Car*          | 83.82    |  85.24  | 66.92  | 11.38  |  9  | 225  | 214.7
+ *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 214.7
  
  
 ## Acknowledgement
