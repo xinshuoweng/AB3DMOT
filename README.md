@@ -84,7 +84,7 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   $ python2 evaluation/evaluate_kitti3dmot.py ped_3d_det_val
   $ python2 evaluation/evaluate_kitti3dmot.py cyc_3d_det_val
   ```
-Then, the results should be exactly same as below, except for the FPS which depends on the individual machine. Note that the results are a little bit better than results in the paper.
+Then, the results should be exactly same as below, except for the FPS which depends on the individual machine. Note that the results for car are a little bit better than results in the paper. Also, we add results on pedestrian and cyclist which are not present in the paper.
 
  Category       | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:---------:|:---------:|:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
