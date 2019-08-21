@@ -58,7 +58,7 @@ For convenience, we provide the 3D detection of the PointRCNN on the KITTI MOT d
 
 ## 3D Multi-Object Tracking
 
-#### Inference
+### Inference
 To run our tracker on the validation set with the provided detection:
 
 ```
@@ -99,7 +99,7 @@ Then, the visualization results are saved to ./results/3d_det_test_thres/trk_ima
 In addition, one can check out our demo for viusualization in full_demo.mp4
 
 
-#### 2D MOT Evaluation
+### 2D MOT Evaluation
 To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
   $ ./results/3d_det_test_thres/data
