@@ -1,9 +1,9 @@
-import os, copy, glob, glob2, sys, numpy as np, colorsys
+import os, copy, glob, glob2, numpy as np, colorsys
 
 def isstring(string_test):
-	if sys.version_info[0] < 3:
+	try:
 		return isinstance(string_test, basestring)
-	else:
+	except NameError:
 		return isinstance(string_test, str)
 
 def islist(list_test):
@@ -43,11 +43,10 @@ def isscalar(scalar_test):
 def isinteger(integer_test):
 	if isnparray(integer_test): return False
 	try: return isinstance(integer_test, int) or int(integer_test) == integer_test
-	except ValueError: return False
-	except TypeError: return False
+	except (TypeError, ValueError): return False
 
 def is_path_valid(pathname):
-	try:  
+	try:
 		if not isstring(pathname) or not pathname: return False
 	except TypeError: return False
 	else: return True
@@ -61,7 +60,7 @@ def is_path_creatable(pathname):
 	pathname = os.path.dirname(os.path.abspath(pathname))
 
 	# recursively to find the previous level of parent folder existing
-	while not is_path_exists(pathname):     
+	while not is_path_exists(pathname):
 		pathname_new = os.path.dirname(os.path.abspath(pathname))
 		if pathname_new == pathname: return False
 		pathname = pathname_new
@@ -121,7 +120,7 @@ def fileparts(input_path, warning=True, debug=True):
 	if good_path[-1] == '/':
 		if len(good_path) > 1: return (good_path[:-1], '', '')	# ignore the final '/'
 		else: return (good_path, '', '')	                          # ignore the final '/'
-	
+
 	directory = os.path.dirname(os.path.abspath(good_path))
 	filename = os.path.splitext(os.path.basename(good_path))[0]
 	ext = os.path.splitext(good_path)[1]
@@ -135,7 +134,7 @@ def mkdir_if_missing(input_path, warning=True, debug=True):
 
 	parameters:
 		input_path:     a string path
-	'''	
+	'''
 	good_path = safe_path(input_path, warning=warning, debug=debug)
 	if debug: assert is_path_exists_or_creatable(good_path), 'input path is not valid or creatable: %s' % good_path
 	dirname, _, _ = fileparts(good_path)
@@ -152,13 +151,13 @@ def load_txt_file(file_path, debug=True):
     num_lines = len(data)
     file.close()
     return data, num_lines
-    
+
 def load_list_from_folder(folder_path, ext_filter=None, depth=1, recursive=False, sort=True, save_path=None, debug=True):
     '''
     load a list of files or folders from a system path
 
     parameters:
-        folder_path:    root to search 
+        folder_path:    root to search
         ext_filter:     a string to represent the extension of files interested
         depth:          maximum depth of folder to search, when it's None, all levels of folders will be searched
         recursive:      False: only return current level
@@ -170,7 +169,7 @@ def load_list_from_folder(folder_path, ext_filter=None, depth=1, recursive=False
     '''
     folder_path = safe_path(folder_path)
     if debug: assert isfolder(folder_path), 'input folder path is not correct: %s' % folder_path
-    if not is_path_exists(folder_path): 
+    if not is_path_exists(folder_path):
         print('the input folder does not exist\n')
         return [], 0
     if debug:
