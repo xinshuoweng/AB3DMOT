@@ -110,7 +110,7 @@ In addition, one can check out our demo for viusualization in full_demo.mp4
 
 
 ### 2D MOT Evaluation
-To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
+To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
   $ ./results/car_3d_det_test_thres/data
   ```
@@ -118,7 +118,7 @@ Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard
 
  Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
- *Car*          | 83.82    |  85.24  | 66.92  | 11.38  |  9  | 225  | 214.7
+ *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 214.7
  
  
 ## Acknowledgement
