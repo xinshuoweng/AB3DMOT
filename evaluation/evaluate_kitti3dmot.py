@@ -8,11 +8,16 @@ from munkres import Munkres
 from collections import defaultdict
 try:
     from ordereddict import OrderedDict # can be installed using pip
-except:
+except ImportError:
     from collections import OrderedDict # only included from python 2.7 on
 
 import mailpy
 from box_util import boxoverlap, box3doverlap
+
+try:
+    xrange
+except NameError:
+    xrange = range
 
 num_sample_pts = 11.0
 
@@ -527,7 +532,7 @@ class trackingEvaluation(object):
                     seq_trajectories[gg.track_id].append(-1)
                     seq_ignored[gg.track_id].append(False)
 
-                if len(g) is 0:
+                if len(g) == 0:
                     cost_matrix=[[]]
                 # associate
                 association_matrix = hm.compute(cost_matrix)
