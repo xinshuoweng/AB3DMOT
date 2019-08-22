@@ -46,7 +46,7 @@ This code has been tested on python 2.7 and 3.5, and also requires the following
 One can either use the system python or create a virtual enviroment (virtualenv for python2, venv for python3) specifically for this project (https://www.pythonforbeginners.com/basics/how-to-use-python-virtualenv). To install required dependencies on the system python, please run the following command at the root of this code:
 ```
 $ pip2 install -r requirements.txt
-```
+```d
 To install required dependencies on the virtual environment of the python (e.g., virtualenv for python2), please run the following command at the root of this code:
 ```
 $ pip install virtualenv
@@ -85,7 +85,7 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   $ python evaluation/evaluate_kitti3dmot.py ped_3d_det_val
   $ python evaluation/evaluate_kitti3dmot.py cyc_3d_det_val
   ```
-Then, the results should be exactly same as below, except for the FPS which depends on the individual machine. Note that the results for car are a little bit better than results in the paper. Also, we add results on pedestrian and cyclist which are not present in the paper.
+Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. Note that the results for car are a little bit better than the results in the paper. Also, we add results for pedestrian and cyclist which are not present in the paper.
 
  Category       | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:---------:|:---------:|:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
@@ -97,8 +97,8 @@ Then, the results should be exactly same as below, except for the FPS which depe
 
 To reproduce the qualitative results of our 3D MOT system shown in the paper:
 
-1. Thresholding the trajectories using a proper threshold
-2. draw the remaining 3D trajectories on the images (Note that the opencv3 is required by this step, please check the opencv version if there is an error)
+1. Threshold the trajectories using a proper threshold
+2. Draw the remaining 3D trajectories on the images (Note that the opencv3 is required by this step, please check the opencv version if there is an error)
   ```
   $ python trk_conf_threshold.py car_3d_det_test
   $ python visualization.py car_3d_det_test_thres
