@@ -58,9 +58,9 @@ $ pip install -r requirements.txt
 ## 3D Object Detection:
 For convenience, we provide the 3D detection of the PointRCNN on the KITTI MOT dataset at (./data/KITTI/) for car, pedestrian and cyclist splits. Note that our detection results follow the KITTI format except that the order is switched. We show an example of detection as follows:
 
-Frame | Type   | 2D BBOX (x1, y1, x2, y2)               | Confidence | 3D BBOX (height, width, length, x, y, z, rot_y) | Orientation  | 
-------|:------:|:--------------------------------------:|:----------:|:-----------------------------------------------:|:-------------:
- 0    | 2 (car)| 726.4030, 173.5915, 917.4820, 315.0742 |  13.8527   | 1.5599, 1.5848, 3.4791, 2.5702, 1.5720, 9.7190, -1.5595|-1.8180| 
+Frame | Type   | 2D BBOX (x1, y1, x2, y2)       | Confidence | 3D BBOX (h, w, l, x, y, z, rot_y) | Orientation  | 
+------|:------:|:------------------------------:|:----------:|:---------------------------------:|:-------------:
+ 0    | 2 (car)| 726.40, 173.59, 917.48, 315.07 |  13.85     | 1.56, 1.58, 3.48, 2.57, 1.57, 9.72, -1.56 | -1.82 | 
  
 ## 3D Multi-Object Tracking
 
