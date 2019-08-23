@@ -79,7 +79,7 @@ $ python main.py car_3d_det_test
 $ python main.py ped_3d_det_test
 $ python main.py cyc_3d_det_test
 ```
-Then, the results will be saved to "./results" folder. In detail, results in "./results/data" folder are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). On the other hand, results in "./results/trk_withid" folder are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID at the last column.
+Then, the results will be saved to "./results" folder. In detail, results in "./results/data" folder are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). On the other hand, results in "./results/trk_withid" folder are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID in the last column.
 
 Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
 
