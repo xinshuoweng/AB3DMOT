@@ -56,7 +56,7 @@ $ pip install -r requirements.txt
 ```
 
 ## 3D Object Detection:
-For convenience, we provide the 3D detection of PointRCNN on the KITTI MOT dataset at (./data/KITTI/) for car, pedestrian and cyclist splits. Our detection results follow the format of the KITTI 3D object detection challenge (format definition can be found in the object development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d) except that the order is switched. We show an example of detection as follows:
+For convenience, we provide the 3D detection of PointRCNN on the KITTI MOT dataset at "./data/KITTI/" for car, pedestrian and cyclist splits. Our detection results follow the format of the KITTI 3D Object Detection Challenge (format definition can be found in the object development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d) except that the order is switched. We show an example of detection as follows:
 
 Frame | Type   | 2D BBOX (x1, y1, x2, y2)       | Score | 3D BBOX (h, w, l, x, y, z, rot_y) | Alpha  | 
 ------|:------:|:------------------------------:|:----------:|:---------------------------------:|:-------------:
@@ -79,7 +79,7 @@ $ python main.py car_3d_det_test
 $ python main.py ped_3d_det_test
 $ python main.py cyc_3d_det_test
 ```
-Then, the results will be saved to "./results" folder. In details, results in "./results/data" folder are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). On the other hand, Results in ./results/trk_withid folder are used for visualization only, which follow the format of KITTI 3D Detection challenge except that we add an ID at the last column.
+Then, the results will be saved to "./results" folder. In detail, results in "./results/data" folder are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). On the other hand, results in "./results/trk_withid" folder are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID at the last column.
 
 Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
 
@@ -110,7 +110,7 @@ To reproduce the qualitative results of our 3D MOT system shown in the paper:
   $ python visualization.py car_3d_det_test_thres
   ```
 
-Then, the visualization results are saved to ./results/car_3d_det_test_thres/trk_image_vis. If one wants to visualize the results on the entire sequences, please first download the KITTI MOT dataset at http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image and calibration files to the './data/KITTI/resources' folder.
+Then, the visualization results are saved to "./results/car_3d_det_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please first download the KITTI MOT dataset at http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image and calibration files to the "./data/KITTI/resources" folder.
 
 In addition, one can check out our demo for viusualization in full_demo.mp4
 
