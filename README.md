@@ -56,7 +56,7 @@ $ pip install -r requirements.txt
 ```
 
 ## 3D Object Detection:
-For convenience, we provide the 3D detection of the PointRCNN on the KITTI MOT dataset at (./data/KITTI/) for car, pedestrian and cyclist splits. Note that our detection results follow the format of the KITTI 3D object detection challenge except that the order is switched. We show an example of detection as follows:
+For convenience, we provide the 3D detection of the PointRCNN on the KITTI MOT dataset at (./data/KITTI/) for car, pedestrian and cyclist splits. Note that our detection results follow the format of the KITTI 3D object detection challenge (the format definition can be found in the object development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d) except that the order is switched. We show an example of detection as follows:
 
 Frame | Type   | 2D BBOX (x1, y1, x2, y2)       | Score | 3D BBOX (h, w, l, x, y, z, rot_y) | Alpha  | 
 ------|:------:|:------------------------------:|:----------:|:---------------------------------:|:-------------:
