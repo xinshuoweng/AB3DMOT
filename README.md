@@ -79,7 +79,7 @@ $ python main.py car_3d_det_test
 $ python main.py ped_3d_det_test
 $ python main.py cyc_3d_det_test
 ```
-Then, the results will be saved to ./results folder. Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
+Then, the results will be saved to ./results folder. In details, results in ./results/data folder follows the format of the KITTI MOT challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
 
 ### 3D MOT Evaluation
 
