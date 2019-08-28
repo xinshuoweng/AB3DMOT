@@ -527,7 +527,7 @@ class trackingEvaluation(object):
                     seq_trajectories[gg.track_id].append(-1)
                     seq_ignored[gg.track_id].append(False)
 
-                if len(g) is 0:
+                if len(g) == 0:
                     cost_matrix=[[]]
                 # associate
                 association_matrix = hm.compute(cost_matrix)
