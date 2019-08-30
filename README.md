@@ -5,7 +5,7 @@
 This repository contains the official python implementation for "[A Baseline for 3D Multi-Object Tracking](https://arxiv.org/pdf/1907.03961.pdf)". If you find this code useful, please cite our paper:
 
 ```
-@article{Weng2019_AB3DMOT, 
+@article{weng2019_AB3DMOT, 
   archivePrefix = {arXiv}, 
   arxivId = {1907.03961}, 
   author = {Weng, Xinshuo and Kitani, Kris}, 
