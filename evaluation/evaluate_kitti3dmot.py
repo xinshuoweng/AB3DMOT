@@ -700,7 +700,7 @@ class trackingEvaluation(object):
                 if tmpfp<0:
                     print(tmpfp, len(t), tmptp, nignoredtracker, nignoredtp, nignoredpairs)
                     raise NameError("Something went wrong! FP is negative")
-                if tmptp + tmpfn is not len(g)-ignoredfn-nignoredtp:
+                if tmptp + tmpfn != len(g)-ignoredfn-nignoredtp:
                     print("seqidx", seq_idx)
                     print("frame ", f)
                     print("TP    ", tmptp)
@@ -711,7 +711,7 @@ class trackingEvaluation(object):
                     print("ign GT", ignoredfn)
                     print("ign TP", nignoredtp)
                     raise NameError("Something went wrong! nGroundtruth is not TP+FN")
-                if tmptp+tmpfp+nignoredtp+nignoredtracker-nignoredpairs is not len(t):
+                if tmptp+tmpfp+nignoredtp+nignoredtracker-nignoredpairs != len(t):
                     print(seq_idx, f, len(t), tmptp, tmpfp)
                     print(len(association_matrix), association_matrix)
                     raise NameError("Something went wrong! nTracker is not TP+FP")
