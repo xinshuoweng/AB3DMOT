@@ -25,7 +25,8 @@ This repository contains the official python implementation for "[A Baseline for
 - [Acknowledgement](#acknowledgement)
 
 ## News
-- Aug. 21, 2019: Python 3.5 (3.6?, 3.7?) supported.
+- Jan. 10, 2020: New metrics sAMOTA added and results updated
+- Aug. 21, 2019: Python 3 supported.
 - Aug. 21, 2019: Results on KITTI "pedestrian" and "cyclist" categories released.
 - Aug. 19, 2019: A minor bug in orientation correction fixed.
 - Jul. 9, 2019: Code and results on KITTI "car" category released.
@@ -93,11 +94,11 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   ```
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. Note that the results for car are a little bit better than the results in the paper. Also, we add results for pedestrian and cyclist which are not present in the paper.
 
- Category       | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
---------------- |:---------:|:---------:|:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
- *Car*          | 39.48     | 74.67     | 76.57    |  79.16  |  70.04 | 7.27   |  0  | 50   | 207.4
- *Pedestrian*   | 25.21     | 49.69     | 61.19    |  67.00  |  36.53 | 39.52  |  0  | 63   | 436.6
- *Cyclist*      | 20.05     | 59.29     | 58.47    |  75.25  |  56.76 | 27.03  |  0  | 5    | 1168.5
+ Category       | sAMOTA (%) | AMOTA (%) | AMOTP (%) | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
+--------------- |:----------:|:---------:|:--------:|:-------:|:------:|:----:|:---:|:---:|:---:
+ *Car*          |  91.78     | 44.26     | 77.41     | 83.35    |  78.43  |  75.68 |  3.78  |  0  | 15   | 207.4
+ *Pedestrian*   |  73.18     | 28.92     | 53.90     | 66.98    |  67.77  |  50.70 | 20.42  |  1  | 74   | 436.6
+ *Cyclist*      |  69.81     | 34.93     | 63.03     | 70.70    |  76.55  |  71.43 | 17.86  |  0  | 4    | 1168.5
 
 #### Visualization
 
