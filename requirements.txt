@@ -2,7 +2,7 @@ numba==0.43.1
 filterpy==1.4.5
 scikit-learn==0.19.2
 matplotlib==2.2.3
-pillow==5.2.0
+pillow==6.2.0
 
 opencv-python==3.4.3.18
 glob2==0.6
