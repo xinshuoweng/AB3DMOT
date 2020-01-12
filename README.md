@@ -28,7 +28,7 @@ This code has been tested on python 2.7 and 3.5, and also requires the following
 2. filterpy==1.4.5
 3. numba==0.43.1
 4. matplotlib==2.2.3
-5. pillow==5.2.0
+5. pillow==6.2.0
 6. opencv-python==3.4.3.18
 7. glob2==0.6
 
