@@ -1,4 +1,9 @@
+# Author: Xinshuo Weng
+# email: xinshuo.weng@gmail.com
+# partially borrowed from SORT
+
 from __future__ import print_function
+import matplotlib; matplotlib.use('Agg')
 import os.path, copy, numpy as np, time, sys
 from numba import jit
 from sklearn.utils.linear_assignment_ import linear_assignment
@@ -273,8 +278,8 @@ class KalmanBoxTracker(object):
     """
     return self.kf.x[:7].reshape((7, ))
 
-def associate_detections_to_trackers(detections,trackers,iou_threshold=0.1):
-# def associate_detections_to_trackers(detections,trackers,iou_threshold=0.01):     # ablation study
+def associate_detections_to_trackers(detections,trackers,iou_threshold=0.01):     
+# def associate_detections_to_trackers(detections,trackers,iou_threshold=0.1):      # ablation study
 # def associate_detections_to_trackers(detections,trackers,iou_threshold=0.25):
   """
   Assigns detections to tracked object (both represented as bounding boxes)
@@ -316,7 +321,6 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold=0.1):
     matches = np.concatenate(matches,axis=0)
 
   return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
-
 
 class AB3DMOT(object):
   def __init__(self,max_age=2,min_hits=3):      # max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
