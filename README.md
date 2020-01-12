@@ -1,8 +1,8 @@
-# A Baseline for 3D Multi-Object Tracking
+# Advancing 3D Multi-Object Tracking: Evaluation Metrics and A Baseline
 
 <img align="center" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/github_demo.gif">
 
-This repository contains the official python implementation for "[A Baseline for 3D Multi-Object Tracking](https://arxiv.org/pdf/1907.03961.pdf)". If you find this code useful, please cite our paper:
+This repository contains the official python implementation for "[Advancing 3D Multi-Object Tracking: Evaluation Metrics and A Baseline](https://arxiv.org/pdf/1907.03961.pdf)". If you find this code useful, please cite our paper:
 
 ```
 @article{Weng2019_3dmot, 
