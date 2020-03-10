@@ -14,7 +14,7 @@ except:
 import mailpy
 from box_util import boxoverlap, box3doverlap
 
-num_sample_pts = 11.0
+num_sample_pts = 41.0
 
 class tData:
     """
@@ -60,18 +60,18 @@ class tData:
 
 class trackingEvaluation(object):
     """ tracking statistics (CLEAR MOT, id-switches, fragments, ML/PT/MT, precision/recall)
-             MOTA	- Multi-object tracking accuracy in [0,100]
-             MOTP	- Multi-object tracking precision in [0,100] (3D) / [td,100] (2D)
-             MOTAL	- Multi-object tracking accuracy in [0,100] with log10(id-switches)
+             MOTA   - Multi-object tracking accuracy in [0,100]
+             MOTP   - Multi-object tracking precision in [0,100] (3D) / [td,100] (2D)
+             MOTAL  - Multi-object tracking accuracy in [0,100] with log10(id-switches)
 
              id-switches - number of id switches
              fragments   - number of fragmentations
 
-             MT, PT, ML	- number of mostly tracked, partially tracked and mostly lost trajectories
+             MT, PT, ML - number of mostly tracked, partially tracked and mostly lost trajectories
 
-             recall	        - recall = percentage of detected targets
-             precision	    - precision = percentage of correctly detected targets
-             FAR		    - number of false alarms per frame
+             recall         - recall = percentage of detected targets
+             precision      - precision = percentage of correctly detected targets
+             FAR            - number of false alarms per frame
              falsepositives - number of false positives (FP)
              missed         - number of missed targets (FN)
     """
@@ -80,7 +80,7 @@ class trackingEvaluation(object):
         # get number of sequences and
         # get number of frames per sequence from test mapping
         # (created while extracting the benchmark)
-        filename_test_mapping = "evaluation/evaluate_tracking.seqmap"
+        filename_test_mapping = os.path.join(gt_path, 'evaluate_tracking.seqmap.val')
         self.n_frames         = []
         self.sequence_name    = []
         with open(filename_test_mapping, "r") as fh:
@@ -165,17 +165,6 @@ class trackingEvaluation(object):
         # is expanded if necessary and reduced in any case
         self.gt_trajectories            = [[] for x in range(self.n_sequences)]
         self.ign_trajectories           = [[] for x in range(self.n_sequences)]
-
-    def createEvalDir(self):
-        """
-            Creates directory to store evaluation results and data for visualization.
-        """
-        
-        self.eval_dir = os.path.join("./results/", self.t_sha, "eval", self.cls)
-        if not os.path.exists(self.eval_dir):
-            print("create directory:", self.eval_dir, end=' ')
-            os.makedirs(self.eval_dir)
-            print("done")
 
     def loadGroundtruth(self):
         """
@@ -338,12 +327,17 @@ class trackingEvaluation(object):
 
     def getThresholds(self, scores, num_gt, num_sample_pts=num_sample_pts):
         # based on score of true positive to discretize the recall
-        # may not be 11 due to not fully recall the results, all the results point has zero precision
+        # not necessarily have data on all points due to not fully recall the results, all the results point has zero precision
+        # compute the recall based on the gt positives
+
+        # scores: the list of scores of the matched true positives
+
         scores = np.array(scores)
         scores.sort()
         scores = scores[::-1]
         current_recall = 0
         thresholds = []
+        recalls = []
         for i, score in enumerate(scores):
             l_recall = (i + 1) / float(num_gt)
             if i < (len(scores) - 1):
@@ -354,9 +348,10 @@ class trackingEvaluation(object):
                 continue
 
             thresholds.append(score)
+            recalls.append(current_recall)
             current_recall += 1 / (num_sample_pts - 1.0)
 
-        return thresholds
+        return thresholds[1:], recalls[1:]          # throw the first one with 0 recall
 
     def reset(self):
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
@@ -408,7 +403,7 @@ class trackingEvaluation(object):
 
         return 
 
-    def compute3rdPartyMetrics(self, threshold=-10000):
+    def compute3rdPartyMetrics(self, threshold=-10000, recall_thres=1.0):
     # def compute3rdPartyMetrics(self, threshold=3):
         """
             Computes the metrics defined in
@@ -444,13 +439,14 @@ class trackingEvaluation(object):
                         tracker_id_score[id_tmp] = list()
                     tracker_id_score[id_tmp].append(score_tmp)
 
+            id_average_score = dict()
             to_delete_id = list()
             for track_id, score_list in tracker_id_score.items():
                 average_score = sum(score_list) / float(len(score_list))
+                id_average_score[track_id] = average_score
                 if average_score < threshold:
                     to_delete_id.append(track_id)
-            # print(to_delete_id)
-
+            
             seq_tracker = list()
             for frame in range(len(seq_tracker_before)):
                 seq_tracker_frame = list()  
@@ -458,6 +454,8 @@ class trackingEvaluation(object):
                 for index in range(len(tracks_tmp)):
                     trk_tmp = tracks_tmp[index]
                     id_tmp = trk_tmp.track_id
+                    average_score = id_average_score[id_tmp] 
+                    trk_tmp.score = average_score
                     if id_tmp not in to_delete_id:
                         seq_tracker_frame.append(trk_tmp)
                 seq_tracker.append(seq_tracker_frame)
@@ -559,8 +557,6 @@ class trackingEvaluation(object):
                         # true positives are only valid associations
                         self.tp += 1
                         tmptp   += 1
-
-                        # print(t[col].score)
                         self.scores.append(t[col].score)
 
                     else:
@@ -634,6 +630,9 @@ class trackingEvaluation(object):
                 # the below might be confusion, check the comments in __init__
                 # to see what the individual statistics represent
                 
+                # nignoredtp is already associated, but should ignored
+                # ignoredfn is already missed, but should ignored
+
                 # correct TP by number of ignored TP due to truncation
                 # ignored TP are shown as tracked in visualization
                 tmptp -= nignoredtp
@@ -642,6 +641,7 @@ class trackingEvaluation(object):
                 self.itp += nignoredtp
                 
                 # adjust the number of ground truth objects considered
+                # self.n_gt_adjusted = self.n_gt
                 self.n_gt -= (ignoredfn + nignoredtp)
                 
                 # count the number of ignored ground truth objects
@@ -656,8 +656,15 @@ class trackingEvaluation(object):
                 
                 # false negatives = associated gt bboxes exceding association threshold + non-associated gt bboxes
                 # 
+
+                # explanation of fn
+                # the original fn is in the matched gt where the score is not high enough
+                # len(g) - len(association amtrix), means that some gt is not matched in hungarian
+                # further - ignoredfn, means that some gt can be ignored
+
                 tmpfn   += len(g)-len(association_matrix)-ignoredfn
                 self.fn += len(g)-len(association_matrix)-ignoredfn
+                # self.fn += len(g)-len(association_matrix)
                 self.ifn += ignoredfn
                 
                 # false positives = tracker bboxes - associated tracker bboxes
@@ -842,9 +849,11 @@ class trackingEvaluation(object):
         if self.n_gt==0:
             self.MOTA = -float("inf")
             self.MODA = -float("inf")
+            self.sMOTA = -float("inf")
         else:
             self.MOTA  = 1 - (self.fn + self.fp + self.id_switches)/float(self.n_gt)
             self.MODA  = 1 - (self.fn + self.fp) / float(self.n_gt)
+            self.sMOTA = min(1, max(0, 1 - (self.fn + self.fp + self.id_switches - (1 - recall_thres) * self.n_gt) / float(recall_thres * self.n_gt)))
         if self.tp==0:
             self.MOTP  = 0
         else:
@@ -919,7 +928,7 @@ class trackingEvaluation(object):
         
         return summary
 
-    def createSummary_simple(self, threshold):
+    def createSummary_simple(self, threshold, recall):
         """
             Generate and mail a summary of the results.
             If mailpy.py is present, the summary is instead printed.
@@ -927,11 +936,11 @@ class trackingEvaluation(object):
         
         summary = ""
         
-        summary += ("evaluation with confidence threshold %f"%threshold).center(80,"=") + "\n"
-        summary += ' MOTA   MOTP   MODA   MODP    MT     ML     IDS  FRAG    F1   Prec  Recall  FAR     TP    FP    FN\n'
+        summary += ("evaluation with confidence threshold %f, recall %f" % (threshold, recall)).center(80,"=") + "\n"
+        summary += ' sMOTA   MOTA   MOTP    MT     ML     IDS  FRAG    F1   Prec  Recall  FAR     TP    FP    FN\n'
 
-        summary += '{:.4f} {:.4f} {:.4f} {:.4f} {:.4f} {:.4f} {:5d} {:5d} {:.4f} {:.4f} {:.4f} {:.4f} {:5d} {:5d} {:5d}\n'.format( \
-            self.MOTA, self.MOTP, self.MODA, self.MODP, self.MT, self.ML, self.id_switches, self.fragments, \
+        summary += '{:.4f} {:.4f} {:.4f} {:.4f} {:.4f} {:5d} {:5d} {:.4f} {:.4f} {:.4f} {:.4f} {:5d} {:5d} {:5d}\n'.format( \
+            self.sMOTA, self.MOTA, self.MOTP, self.MT, self.ML, self.id_switches, self.fragments, \
             self.F1, self.precision, self.recall, self.FAR, self.tp, self.fp, self.fn) 
         summary += "="*80
         
@@ -953,15 +962,13 @@ class trackingEvaluation(object):
             s_out += ("%s"%val).rjust(width[1])
         return s_out
       
-    def saveToStats(self, dump, threshold=None):
+    def saveToStats(self, dump, threshold=None, recall=None):
         """
             Save the statistics in a whitespace separate file.
         """
-        
-        
-        # write summary to file summary_cls.txt
+
         if threshold is None: summary = self.createSummary_details()
-        else: summary = self.createSummary_simple(threshold)
+        else: summary = self.createSummary_simple(threshold, recall)
         mail.msg(summary)       # mail or print the summary.
         print(summary, file=dump)
 
@@ -981,9 +988,11 @@ class stat:
         self.precision = 0
         self.fp = 0
         self.fn = 0
+        self.sMOTA = 0
 
         self.mota_list = list()
         self.motp_list = list()
+        self.sMOTA_list = list()
         self.f1_list = list()
         self.precision_list = list()
         self.fp_list = list()
@@ -1004,8 +1013,10 @@ class stat:
         self.precision += data['precision']
         self.fp += data['fp']
         self.fn += data['fn']
+        self.sMOTA += data['sMOTA']
 
         self.mota_list.append(data['mota'])
+        self.sMOTA_list.append(data['sMOTA'])
         self.motp_list.append(data['motp'])
         self.f1_list.append(data['F1'])
         self.precision_list.append(data['precision'])
@@ -1014,23 +1025,19 @@ class stat:
         self.recall_list.append(data['recall'])
 
     def output(self):
-        self.ave_mota = self.mota / num_sample_pts
-        self.ave_motp = self.motp / num_sample_pts
-        # self.ave_moda = self.moda / num_sample_pts
-        # self.ave_modp = self.modp / num_sample_pts
-        self.ave_f1 = self.F1 / num_sample_pts
-        self.ave_precision = self.precision / num_sample_pts
-        # self.average_fp = 
+        self.sAMOTA = self.sMOTA / (num_sample_pts - 1)
+        self.amota = self.mota / (num_sample_pts - 1)
+        self.amotp = self.motp / (num_sample_pts - 1)
     
     def print_summary(self):
         summary = ""
         
-        summary += ("evaluation: average at all thresholds").center(80,"=") + "\n"
-        summary += ' AMOTA  AMOTP  APrec\n'
+        summary += ("evaluation: average over recall").center(80,"=") + "\n"
+        summary += ' sAMOTA  AMOTA  AMOTP \n'
 
-        summary += '{:.4f} {:.4f} {:.4f}\n'.format( \
-            self.ave_mota, self.ave_motp, self.ave_precision) 
+        summary += '{:.4f} {:.4f} {:.4f}\n'.format(self.sAMOTA, self.amota, self.amotp) 
         summary += "="*80
+    
         print(summary, file=self.dump)
         
         return summary
@@ -1052,7 +1059,7 @@ class stat:
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
         plt.tight_layout()
-        if y_name in ['MOTA', 'MOTP', 'F1', 'Precision']:
+        if y_name in ['sMOTA', 'MOTA', 'MOTP', 'F1', 'Precision']:
             ax.set_ylim(0.0, 1.0)
         else:
             ax.set_ylim(0.0, max(data_list))
@@ -1062,14 +1069,16 @@ class stat:
             # print(max_ind)
             plt.axvline(self.recall_list[max_ind], ymax=data_list[max_ind], color='r')
             plt.plot(self.recall_list[max_ind], data_list[max_ind], 'or', markersize=12)
-            plt.text(self.recall_list[max_ind]-0.05, data_list[max_ind]+0.03, '%.2f' % (data_list[max_ind]), fontsize=20)
+            plt.text(self.recall_list[max_ind]-0.05, data_list[max_ind]+0.03, '%.2f' % (data_list[max_ind] * 100), fontsize=20)
         fig.savefig(save_path)
+        plt.close()
         # zxc
 
     def plot(self):
         save_dir = os.path.join("./results", self.t_sha)
 
         self.plot_over_recall(self.mota_list, 'MOTA - Recall Curve', 'MOTA', os.path.join(save_dir, 'MOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
+        self.plot_over_recall(self.sMOTA_list, 'sMOTA - Recall Curve', 'sMOTA', os.path.join(save_dir, 'sMOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.motp_list, 'MOTP - Recall Curve', 'MOTP', os.path.join(save_dir, 'MOTP_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.f1_list, 'F1 - Recall Curve', 'F1', os.path.join(save_dir, 'F1_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.fp_list, 'False Positive - Recall Curve', 'False Positive', os.path.join(save_dir, 'FP_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
@@ -1109,40 +1118,34 @@ def evaluate(result_sha,mail,eval_3diou,eval_2diou):
             raise ValueError("Ground truth not found.")
         mail.msg("Loading Groundtruth - Success")
         # sanity checks
-        if len(e.groundtruth) is not len(e.tracker):
-            mail.msg("The uploaded data does not provide results for every sequence.")
+        if len(e.groundtruth) != len(e.tracker):
+            mail.msg("The uploaded data does not provide results for every sequence: %d vs %d" % (len(e.groundtruth), len(e.tracker)))
             return False
         mail.msg("Loaded %d Sequences." % len(e.groundtruth))
         mail.msg("Start Evaluation...")
-        # create needed directories, evaluate and save stats
-        try:
-            e.createEvalDir()
-        except:
-            mail.msg("Feel free to contact us (lenz@kit.edu), if you receive this error message:")
-            mail.msg("   Caught exception while creating results.")
-        
+
         if eval_3diou: suffix = 'eval3D'
         else: suffix = 'eval2D'
-        filename = os.path.join("./results", result_sha, "summary_%s_average_%s.txt" % (c, suffix)); dump = open(filename, "w+")
+        filename = os.path.join(e.t_path, "../summary_%s_average_%s.txt" % (c, suffix)); dump = open(filename, "w+")
         stat_meter = stat(t_sha=result_sha, cls=c, suffix=suffix, dump=dump)
         e.compute3rdPartyMetrics()
 
         # evaluate the mean average metrics
         best_mota, best_threshold = 0, -10000
-        threshold_list = e.getThresholds(e.scores, e.num_gt)
-        for threshold_tmp in threshold_list:
+        threshold_list, recall_list = e.getThresholds(e.scores, e.num_gt)
+        for threshold_tmp, recall_tmp in zip(threshold_list, recall_list):
             data_tmp = dict()
             e.reset()
-            e.compute3rdPartyMetrics(threshold_tmp)
+            e.compute3rdPartyMetrics(threshold_tmp, recall_tmp)
             data_tmp['mota'], data_tmp['motp'], data_tmp['moda'], data_tmp['modp'], data_tmp['precision'], \
-            data_tmp['F1'], data_tmp['fp'], data_tmp['fn'], data_tmp['recall'] = \
-                e.MOTA, e.MOTP, e.MODA, e.MODP, e.precision, e.F1, e.fp, e.fn, e.recall
+            data_tmp['F1'], data_tmp['fp'], data_tmp['fn'], data_tmp['recall'], data_tmp['sMOTA'] = \
+                e.MOTA, e.MOTP, e.MODA, e.MODP, e.precision, e.F1, e.fp, e.fn, e.recall, e.sMOTA
             stat_meter.update(data_tmp)
             mota_tmp = e.MOTA
             if mota_tmp > best_mota: 
                 best_threshold = threshold_tmp
                 best_mota = mota_tmp
-            e.saveToStats(dump, threshold_tmp) 
+            e.saveToStats(dump, threshold_tmp, recall_tmp) 
 
         e.reset()
         e.compute3rdPartyMetrics(best_threshold)
@@ -1150,9 +1153,8 @@ def evaluate(result_sha,mail,eval_3diou,eval_2diou):
 
         stat_meter.output()
         summary = stat_meter.print_summary()
-        mail.msg(summary)       # mail or print the summary.
-
         stat_meter.plot()
+        mail.msg(summary)       # mail or print the summary.
         dump.close()
 
     # finish
