@@ -585,8 +585,7 @@ class trackingEvaluation(object):
                         ignoredtrackers[tt.track_id] = 1
                         continue
                     for d in dc:
-                        # overlap = boxoverlap(tt,d,"a")
-                        overlap = box3doverlap(tt,d,"a")
+                        overlap = boxoverlap(tt,d,"a")
                         if overlap>0.5 and not tt.valid:
                             tt.ignored      = True
                             nignoredtracker+= 1
