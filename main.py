@@ -118,11 +118,11 @@ def roty(t):
                      [-s, 0,  c]])
 
 def convert_3dbox_to_8corner(bbox3d_input):
-    ''' Takes an object and a projection matrix (P) and projects the 3d
-        bounding box into the image plane.
+    ''' Takes an object's 3D box with the representation of [x,y,z,theta,l,w,h] and 
+        convert it to the 8 corners of the 3D box
+        
         Returns:
-            corners_2d: (8,2) array in left image coord.
-            corners_3d: (8,3) array in in rect camera coord.
+            corners_3d: (8,3) array in in rect camera coord
     '''
     # compute rotational matrix around yaw axis
     bbox3d = copy.copy(bbox3d_input)
@@ -353,6 +353,9 @@ class AB3DMOT(object):        # A baseline of 3D multi-object tracking
     NOTE: The number of objects returned may differ from the number of detections provided.
     """
     dets, info = dets_all['dets'], dets_all['info']         # dets: N x 7, float numpy array
+    
+    # reorder the data to put x,y,z in front to be compatible with the state transition matrix
+    # where the constant velocity model is defined in the first three rows of the matrix
     dets = dets[:, self.reorder]            # reorder the data to [[x,y,z,theta,l,w,h], ...]
     self.frame_count += 1
 
@@ -417,13 +420,13 @@ if __name__ == '__main__':
   for seq_file in seq_file_list:
     _, seq_name, _ = fileparts(seq_file)
     mot_tracker = AB3DMOT() 
-    seq_dets = np.loadtxt(seq_file, delimiter=',') #load detections
+    seq_dets = np.loadtxt(seq_file, delimiter=',')          # load detections
     eval_file = os.path.join(eval_dir, seq_name + '.txt'); eval_file = open(eval_file, 'w')
     save_trk_dir = os.path.join(save_dir, 'trk_withid', seq_name); mkdir_if_missing(save_trk_dir)
     print("Processing %s." % (seq_name))
     for frame in range(int(seq_dets[:,0].min()), int(seq_dets[:,0].max()) + 1):
       save_trk_file = os.path.join(save_trk_dir, '%06d.txt' % frame); save_trk_file = open(save_trk_file, 'w')
-      dets = seq_dets[seq_dets[:,0]==frame,7:14]            # h, w, l, x, y, z, theta
+      dets = seq_dets[seq_dets[:,0]==frame,7:14]            # h, w, l, x, y, z, theta in camera coordinate follwing KITTI convention
 
       ori_array = seq_dets[seq_dets[:,0]==frame,-1].reshape((-1, 1))
       other_array = seq_dets[seq_dets[:,0]==frame,1:7]
@@ -435,7 +438,7 @@ if __name__ == '__main__':
       cycle_time = time.time() - start_time
       total_time += cycle_time
       for d in trackers:
-        bbox3d_tmp = d[0:7]       # h, w, l, x, y, z, theta
+        bbox3d_tmp = d[0:7]       # h, w, l, x, y, z, theta in camera coordinate
         id_tmp = d[7]
         ori_tmp = d[8]
         type_tmp = det_id2str[d[9]]
