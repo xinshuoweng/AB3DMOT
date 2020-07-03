@@ -22,6 +22,7 @@ year = {2019}
 - [Acknowledgement](#acknowledgement)
 
 ## News
+- Jun. 30, 2020: Paper accepted at IROS 2020
 - Jan. 10, 2020: New metrics sAMOTA added and results updated
 - Aug. 21, 2019: Python 3 supported.
 - Aug. 21, 2019: Results on KITTI "pedestrian" and "cyclist" categories released.
