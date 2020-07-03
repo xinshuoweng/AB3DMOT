@@ -6,7 +6,8 @@ from __future__ import print_function
 import matplotlib; matplotlib.use('Agg')
 import os.path, copy, numpy as np, time, sys
 from numba import jit
-from sklearn.utils.linear_assignment_ import linear_assignment
+# from sklearn.utils.linear_assignment_ import linear_assignment    # deprecated
+from scipy.optimize import linear_sum_assignment
 from filterpy.kalman import KalmanFilter
 from utils import load_list_from_folder, fileparts, mkdir_if_missing
 from scipy.spatial import ConvexHull
@@ -199,7 +200,7 @@ class KalmanBoxTracker(object):
     #                       [0,0,0,0,0,0,1,0,0,0,0]])
 
     # self.kf.R[0:,0:] *= 10.   # measurement uncertainty
-    self.kf.P[7:,7:] *= 1000. #state uncertainty, give high uncertainty to the unobservable initial velocities, covariance matrix
+    self.kf.P[7:,7:] *= 1000.   # state uncertainty, give high uncertainty to the unobservable initial velocities, covariance matrix
     self.kf.P *= 10.
     
     # self.kf.Q[-1,-1] *= 0.01    # process uncertainty
@@ -296,7 +297,10 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold=0.01):
   for d,det in enumerate(detections):
     for t,trk in enumerate(trackers):
       iou_matrix[d,t] = iou3d(det,trk)[0]             # det: 8 x 3, trk: 8 x 3
-  matched_indices = linear_assignment(-iou_matrix)      # hougarian algorithm
+  
+  # matched_indices = linear_assignment(-iou_matrix)      # hougarian algorithm     # deprecated
+  row_ind, col_ind = linear_sum_assignment(-iou_matrix)      # hougarian algorithm
+  matched_indices = np.stack((row_ind, col_ind), axis=1)
 
   unmatched_detections = []
   for d,det in enumerate(detections):
@@ -322,8 +326,8 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold=0.01):
 
   return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
 
-class AB3DMOT(object):
-  def __init__(self,max_age=2,min_hits=3):      # max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
+class AB3DMOT(object):        # A baseline of 3D multi-object tracking
+  def __init__(self, max_age=2, min_hits=3):      # max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
   # def __init__(self,max_age=3,min_hits=3):        # ablation study
   # def __init__(self,max_age=1,min_hits=3):      
   # def __init__(self,max_age=2,min_hits=1):      
@@ -337,11 +341,11 @@ class AB3DMOT(object):
     self.reorder = [3, 4, 5, 6, 2, 1, 0]
     self.reorder_back = [6, 5, 4, 0, 1, 2, 3]
 
-  def update(self,dets_all):
+  def update(self, dets_all):
     """
     Params:
       dets_all: dict
-        dets - a numpy array of detections in the format [[x,y,z,theta,l,w,h],[x,y,z,theta,l,w,h],...]
+        dets - a numpy array of detections in the format [[h,w,l,x,y,z,theta],...]
         info: a array of other info for each det
     Requires: this method must be called once for each frame even with empty detections.
     Returns the a similar array, where the last column is the object ID.
@@ -349,7 +353,7 @@ class AB3DMOT(object):
     NOTE: The number of objects returned may differ from the number of detections provided.
     """
     dets, info = dets_all['dets'], dets_all['info']         # dets: N x 7, float numpy array
-    dets = dets[:, self.reorder]
+    dets = dets[:, self.reorder]            # reorder the data to [[x,y,z,theta,l,w,h], ...]
     self.frame_count += 1
 
     trks = np.zeros((len(self.trackers),7))         # N x 7 , #get predicted locations from existing trackers.
@@ -384,7 +388,7 @@ class AB3DMOT(object):
     i = len(self.trackers)
     for trk in reversed(self.trackers):
         d = trk.get_state()      # bbox location
-        d = d[self.reorder_back]
+        d = d[self.reorder_back]    # change format from [x,y,z,theta,l,w,h] to [h,w,l,x,y,z,theta]
 
         if((trk.time_since_update < self.max_age) and (trk.hits >= self.min_hits or self.frame_count <= self.min_hits)):      
           ret.append(np.concatenate((d, [trk.id+1], trk.info)).reshape(1,-1)) # +1 as MOT benchmark requires positive
@@ -393,7 +397,7 @@ class AB3DMOT(object):
         if(trk.time_since_update >= self.max_age):
           self.trackers.pop(i)
     if(len(ret)>0):
-      return np.concatenate(ret)      # x, y, z, theta, l, w, h, ID, other info, confidence
+      return np.concatenate(ret)      # h,w,l,x,y,z,theta, ID, other info, confidence
     return np.empty((0,15))      
     
 if __name__ == '__main__':
@@ -419,7 +423,7 @@ if __name__ == '__main__':
     print("Processing %s." % (seq_name))
     for frame in range(int(seq_dets[:,0].min()), int(seq_dets[:,0].max()) + 1):
       save_trk_file = os.path.join(save_trk_dir, '%06d.txt' % frame); save_trk_file = open(save_trk_file, 'w')
-      dets = seq_dets[seq_dets[:,0]==frame,7:14]
+      dets = seq_dets[seq_dets[:,0]==frame,7:14]            # h, w, l, x, y, z, theta
 
       ori_array = seq_dets[seq_dets[:,0]==frame,-1].reshape((-1, 1))
       other_array = seq_dets[seq_dets[:,0]==frame,1:7]
@@ -431,7 +435,7 @@ if __name__ == '__main__':
       cycle_time = time.time() - start_time
       total_time += cycle_time
       for d in trackers:
-        bbox3d_tmp = d[0:7]
+        bbox3d_tmp = d[0:7]       # h, w, l, x, y, z, theta
         id_tmp = d[7]
         ori_tmp = d[8]
         type_tmp = det_id2str[d[9]]
