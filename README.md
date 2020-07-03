@@ -64,7 +64,7 @@ Frame | Type   | 2D BBOX (x1, y1, x2, y2)       | Score | 3D BBOX (h, w, l, x, y
  
 ## 3D Multi-Object Tracking
 
-#### Inference
+### Inference
 To run our tracker on the KITTI MOT validation set with the provided detection:
 
 ```
@@ -83,7 +83,7 @@ Then, the results will be saved to "./results" folder. In detail, results in "./
 
 Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
 
-#### 3D MOT Evaluation
+### 3D MOT Evaluation
 
 To reproduce the quantitative results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
   ```
@@ -99,7 +99,7 @@ Then, the results should be exactly same as below, except for the FPS which migh
  *Pedestrian*   |  73.18     | 28.92     | 53.90     | 66.98    |  67.77  |  50.70 | 20.42  |  1  | 74   | 436.6
  *Cyclist*      |  69.81     | 34.93     | 63.03     | 70.70    |  76.55  |  71.43 | 17.86  |  0  | 4    | 1168.5
 
-#### Visualization
+### Visualization
 
 To reproduce the qualitative results of our 3D MOT system shown in the paper:
 
@@ -115,7 +115,7 @@ Visualization results are then saved to "./results/car_3d_det_test_thres/trk_ima
 In addition, one can check out our demo for viusualization in full_demo.mp4
 
 
-#### 2D MOT Evaluation
+### 2D MOT Evaluation
 To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
   $ ./results/car_3d_det_test_thres/data
@@ -127,5 +127,5 @@ Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard
  *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 214.7
  
  
-## Acknowledgement
+### Acknowledgement
 Part of the code is borrowed from "[SORT](https://github.com/abewley/sort)"
