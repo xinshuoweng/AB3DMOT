@@ -93,11 +93,11 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   ```
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. Note that the results for car are a little bit better than the results in the paper. Also, we add results for pedestrian and cyclist which are not present in the paper.
 
- Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | MT (%) | ML (%) | IDS | FRAG | FPS 
---------------- |:----------:|:---------:|:--------:|:-------:|:------:|:----:|:---:|:---:|:--:|:---:
- *Car*          |  91.78     | 44.26     | 77.41     | 83.35    |  78.43  |  75.68 |  3.78  |  0  | 15   | 207.4
- *Pedestrian*   |  73.18     | 28.92     | 53.90     | 66.98    |  67.77  |  50.70 | 20.42  |  1  | 74   | 436.6
- *Cyclist*      |  69.81     | 34.93     | 63.03     | 70.70    |  76.55  |  71.43 | 17.86  |  0  | 4    | 1168.5
+ Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | MT | ML | IDS | FRAG | FP | FN | FPS 
+--------------- |:----------:|:---------:|:--------:|:-------:|:------:|:----:|:---:|:---:|:--:|:---:|:--:|:---:
+ *Car*          |  91.78     | 44.26     | 77.41     | 83.35    |  78.43  |  75.68 |  3.78  |  0  | 15   | 607 | 708  | 207.4
+ *Pedestrian*   |  73.18     | 28.92     | 53.90     | 66.98    |  67.77  |  50.70 | 20.42  |  1  | 74   | 523 | 2708 | 436.6
+ *Cyclist*      |  69.81     | 34.93     | 63.03     | 70.70    |  76.55  |  71.43 | 17.86  |  0  | 4    | 178 | 217  | 1168.5
 
 ### Visualization
 
