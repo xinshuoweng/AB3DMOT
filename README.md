@@ -34,18 +34,18 @@ year = {2019}
 
 ## Dependencies:
 This code depends on my personal toolbox: https://github.com/xinshuoweng/Xinshuo_PyToolbox. Please install the toolbox by
-*1. clone the github repository.*
+*1. Clone the github repository.*
 ~~~shell
 git clone https://github.com/xinshuoweng/Xinshuo_PyToolbox
 ~~~
 
-*2. install dependency for the toolbox.*
+*2. Install dependency for the toolbox.*
 ~~~shell
 cd Xinshuo_PyToolbox
 pip install -r requirements.txt
 ~~~
 
-This code has been tested on python 2.7 and 3.6, and also requires the following packages:
+*3. Additionaly, it also requires the following packages:*
 1. scikit-learn==0.19.2
 2. filterpy==1.4.5
 3. numba==0.43.1
