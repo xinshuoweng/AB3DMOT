@@ -3,6 +3,7 @@
 
 import numpy as np, copy
 from numba import jit
+from scipy.spatial import ConvexHull
 
 @jit          
 def poly_area(x,y):
@@ -16,9 +17,6 @@ def box3d_vol(corners):
 	b = np.sqrt(np.sum((corners[1,:] - corners[2,:])**2))
 	c = np.sqrt(np.sum((corners[0,:] - corners[4,:])**2))
 	return a*b*c
-
-#################### option 1 for computing polygon overlap
-from scipy.spatial import ConvexHull
 
 @jit          
 def convex_hull_intersection(p1, p2):
@@ -77,18 +75,6 @@ def polygon_clip(subjectPolygon, clipPolygon):
 		if len(outputList) == 0: return None
 	return (outputList)
 
-#################### option 2 for computing polygon overlap
-from shapely.geometry import Polygon
-
-@jit
-def shapely_polygon_intersection(poly1, poly2):
-	"""
-	"""
-	poly1 = Polygon(poly1)
-	poly2 = Polygon(poly2)
-	return poly1.intersection(poly2).area
-
-#################### comput IoU 3D
 def iou3d(corners1, corners2):
 	''' Compute 3D bounding box IoU, only working for object parallel to ground
 
