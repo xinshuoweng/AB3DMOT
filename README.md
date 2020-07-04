@@ -54,6 +54,10 @@ $ virtualenv .
 $ source bin/activate
 $ pip install -r requirements.txt
 ```
+Please add the path to the code to your PYTHONPATH in order to load the library appropriately. For example, if the code is located at /home/user/workspace/code/AB3DMOT, please add the following to your ~/.profile:
+```
+$ export PYTHONPATH=${PYTHONPATH}:/home/user/workspace/code/AB3DMOT
+```
 
 ## 3D Object Detection:
 For convenience, we provide the 3D detection of PointRCNN on the KITTI MOT dataset at "./data/KITTI/" for car, pedestrian and cyclist splits. Our detection results follow the format of the KITTI 3D Object Detection Challenge (format definition can be found in the object development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d) except that the order is switched. We show an example of detection as follows:
