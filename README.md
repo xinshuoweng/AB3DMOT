@@ -58,6 +58,7 @@ Additionaly, it also requires the following packages:
 
 One can either use the system python or create a virtual enviroment (virtualenv for python2, venv for python3) specifically for this project (https://www.pythonforbeginners.com/basics/how-to-use-python-virtualenv). To install required dependencies on the system python, please run the following command at the root of this code:
 ```
+$ cd path/to/AB3DMOT
 $ pip install -r requirements.txt
 ```
 To install required dependencies on the virtual environment of the python (e.g., virtualenv for python2), please run the following command at the root of this code:
