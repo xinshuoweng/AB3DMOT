@@ -1,0 +1,12 @@
+# ------------------- General Options -------------------------
+description                  : AB3DMOT
+seed                         : 0
+
+kitti_det_root               : /media/hdd2/xinshuo/datasets/KITTI/tracking/produced/det
+kitti_trk_root               : /media/hdd2/xinshuo/datasets/KITTI/tracking/produced
+
+nuscenes_det_root            : /media/hdd2/xinshuo/datasets/nuScenes/data/produced/kitti_format/tracking/produced/det
+nuscenes_trk_root            : /media/hdd2/xinshuo/datasets/nuScenes/data/produced/kitti_format/tracking/produced
+
+folder                       : 20200610_21h19m12s_seed20
+# --------------- data_simulation.py

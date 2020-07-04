@@ -1,5 +1,9 @@
+# Author: Xinshuo Weng
+# email: xinshuo.weng@gmail.com
+
 import os, sys
-from utils import load_txt_file, load_list_from_folder, mkdir_if_missing, fileparts
+from xinshuo_io import load_txt_file, load_list_from_folder, mkdir_if_missing, fileparts
+
 score_threshold = 2.917300
 
 def conf_thresholding(data_dir, save_dir):
