@@ -4,15 +4,13 @@
 
 from __future__ import print_function
 import matplotlib; matplotlib.use('Agg')
-import os.path, copy, numpy as np, time, sys
-from scipy.optimize import linear_sum_assignment
-from AB3DMOT_libs.utils import Config
+import os, numpy as np, time, sys
 from AB3DMOT_libs.model import AB3DMOT
 from xinshuo_io import load_list_from_folder, fileparts, mkdir_if_missing
 
 if __name__ == '__main__':
-	if len(sys.argv)!=2:
-		print("Usage: python main.py result_sha(e.g., car_3d_det_test)")
+	if len(sys.argv) != 2:
+		print('Usage: python main.py result_sha(e.g., pointrcnn_Car_test)')
 		sys.exit(1)
 
 	result_sha = sys.argv[1]

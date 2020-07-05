@@ -65,8 +65,8 @@ def conf_thresholding(data_dir, save_dir):
 			frame_file_save.close()
 
 if __name__ == '__main__':
-	if len(sys.argv)!=2:
-		print("Usage: python trk_conf_threshold.py result_sha(e.g., car_3d_det_test)")
+	if len(sys.argv) != 2:
+		print('Usage: python trk_conf_threshold.py result_sha(e.g., pointrcnn_Car_test)')
 		sys.exit(1)
 
 	result_sha = sys.argv[1]
