@@ -132,9 +132,6 @@ To reproduce the qualitative results of our 3D MOT system shown in the paper:
 
 Visualization results are then saved to "./results/car_3d_det_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
 
-In addition, one can check out our demo for viusualization in full_demo.mp4
-
-
 ### 2D MOT Evaluation
 To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
