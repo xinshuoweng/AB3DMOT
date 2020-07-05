@@ -88,16 +88,16 @@ Frame | Type   | 2D BBOX (x1, y1, x2, y2)       | Score | 3D BBOX (h, w, l, x, y
 To run our tracker on the KITTI MOT validation set with the provided detection:
 
 ```
-$ python main.py car_3d_det_val
-$ python main.py ped_3d_det_val
-$ python main.py cyc_3d_det_val
+$ python main.py pointrcnn_Car_val
+$ python main.py pointrcnn_Pedestrian_val
+$ python main.py pointrcnn_Cyclist_val
 ```
 To run our tracker on the KITTI MOT test set with the provided detection:
 
 ```
-$ python main.py car_3d_det_test
-$ python main.py ped_3d_det_test
-$ python main.py cyc_3d_det_test
+$ python main.py pointrcnn_Car_test
+$ python main.py pointrcnn_Pedestrian_test
+$ python main.py pointrcnn_Cyclist_test
 ```
 Then, the results will be saved to "./results" folder. In detail, results in "./results/data" folder are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). On the other hand, results in "./results/trk_withid" folder are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID in the last column.
 
@@ -107,9 +107,9 @@ Note that, please run the code when the CPU is not occupied by other programs ot
 
 To reproduce the quantitative results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
   ```
-  $ python evaluation/evaluate_kitti3dmot.py car_3d_det_val
-  $ python evaluation/evaluate_kitti3dmot.py ped_3d_det_val
-  $ python evaluation/evaluate_kitti3dmot.py cyc_3d_det_val
+  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val
+  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val
+  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_test
   ```
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. Note that the results for car are a little bit better than the results in the paper. Also, we add results for pedestrian and cyclist which are not present in the paper.
 
@@ -126,8 +126,8 @@ To reproduce the qualitative results of our 3D MOT system shown in the paper:
 1. Threshold the trajectories using a proper threshold
 2. Draw the remaining 3D trajectories on the images (Note that the opencv3 is required by this step, please check the opencv version if there is an error)
   ```
-  $ python trk_conf_threshold.py car_3d_det_test
-  $ python visualization.py car_3d_det_test_thres
+  $ python trk_conf_threshold.py pointrcnn_Car_test
+  $ python visualization.py pointrcnn_Car_test_thres
   ```
 
 Visualization results are then saved to "./results/car_3d_det_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
@@ -138,7 +138,7 @@ In addition, one can check out our demo for viusualization in full_demo.mp4
 ### 2D MOT Evaluation
 To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
-  $ ./results/car_3d_det_test_thres/data
+  $ ./results/pointrcnn_Car_test_thres/data
   ```
 Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard: 
 
