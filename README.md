@@ -111,14 +111,14 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_test
   ```
-Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. Also, we add results for pedestrian and cyclist which are not present in the paper.
+Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. The overall performance is the performance averaged over three categoeries for sAMOTA, AMOTA, AMOTP, MOTA, MOTP and the summed over three categories for IDS, FRAG, FP, FN.
 
  Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
 --------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
  *Car*          |  93.28     | 45.43     | 77.41     | 86.24    |  78.43  |  0  | 15   | 365 | 708  | 207.4
- *Pedestrian*   |  74.39     | 29.77     | 53.90     | 69.50    |  67.77  |  1  | 74   | 276 | 2708 | 436.6
- *Cyclist*      |  72.94     | 37.95     | 63.03     | 79.82    |  76.55  |  0  | 4    | 55  | 217  | 1168.5
- *Average*      |  80.20     | 37.72     | 64.78     | 78.52    |  74.25  |  1  | 93   | 696 | 3713 | -
+ *Pedestrian*   |  74.39     | 29.77     | 53.90     | 69.50    |  67.77  |  1  | 74   | 276 | 2708 | 470.1
+ *Cyclist*      |  72.94     | 37.95     | 63.03     | 79.82    |  76.55  |  0  | 4    | 55  | 217  | 1241.6
+ *Overall*      |  80.20     | 37.72     | 64.78     | 78.52    |  74.25  |  1  | 93   | 696 | 3713 | -
  
 ### Visualization
 
