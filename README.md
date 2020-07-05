@@ -111,14 +111,15 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_test
   ```
-Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. Note that the results for car are a little bit better than the results in the paper. Also, we add results for pedestrian and cyclist which are not present in the paper.
+Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. Also, we add results for pedestrian and cyclist which are not present in the paper.
 
- Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | MT | ML | IDS | FRAG | FP | FN | FPS 
---------------- |:----------:|:---------:|:--------:|:-------:|:------:|:----:|:---:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  91.78     | 44.26     | 77.41     | 83.35    |  78.43  |  75.68 |  3.78  |  0  | 15   | 607 | 708  | 207.4
- *Pedestrian*   |  73.18     | 28.92     | 53.90     | 66.98    |  67.77  |  50.70 | 20.42  |  1  | 74   | 523 | 2708 | 436.6
- *Cyclist*      |  69.81     | 34.93     | 63.03     | 70.70    |  76.55  |  71.43 | 17.86  |  0  | 4    | 178 | 217  | 1168.5
-
+ Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
+--------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
+ *Car*          |  93.28     | 45.43     | 77.41     | 86.24    |  78.43  |  0  | 15   | 365 | 708  | 207.4
+ *Pedestrian*   |  74.39     | 29.77     | 53.90     | 69.50    |  67.77  |  1  | 74   | 276 | 2708 | 436.6
+ *Cyclist*      |  72.94     | 37.95     | 63.03     | 79.82    |  76.55  |  0  | 4    | 55  | 217  | 1168.5
+ *Average*      |  80.20     | 37.72     | 64.78     | 78.52    |  74.25  |  1  | 93   | 696 | 3713 | -
+ 
 ### Visualization
 
 To reproduce the qualitative results of our 3D MOT system shown in the paper:
