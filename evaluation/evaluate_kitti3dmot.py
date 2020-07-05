@@ -150,7 +150,7 @@ class trackingEvaluation(object):
         self.eval_2diou = eval_2diou
         self.eval_3diou = eval_3diou
         if eval_2diou: 
-            self.min_overlap   = 0.5 # minimum bounding box overlap for 3rd party metrics
+            self.min_overlap   = 0.5  # minimum bounding box overlap for 3rd party metrics
         elif eval_3diou: 
             self.min_overlap   = 0.25 # minimum bounding box overlap for 3rd party metrics
         else: assert False
@@ -506,11 +506,10 @@ class trackingEvaluation(object):
                     gg.fragmentation = 0
                     cost_row         = []
                     for tt in t:
-                        # overlap == 1 is cost ==0
                         if self.eval_2diou:
-                            c = 1-boxoverlap(gg,tt)
+                            c = 1 - boxoverlap(gg, tt)
                         elif self.eval_3diou:
-                            c = 1-box3doverlap(gg,tt)
+                            c = 1 - box3doverlap(gg, tt)
                         else:
                             assert False, 'error'
 
@@ -587,10 +586,10 @@ class trackingEvaluation(object):
                     for d in dc:
                         # as KITTI does not provide ground truth 3D box for DontCare objects, we have to use
                         # 2D IoU here and a threshold of 0.5 for 2D IoU. 
-                        overlap = boxoverlap(tt,d,"a")
+                        overlap = boxoverlap(tt, d, "a")
                         if overlap > 0.5 and not tt.valid:
                             tt.ignored      = True
-                            nignoredtracker+= 1
+                            nignoredtracker += 1
                             ignoredtrackers[tt.track_id] = 1
                             break
 
