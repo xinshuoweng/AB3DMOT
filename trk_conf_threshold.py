@@ -41,7 +41,7 @@ def conf_thresholding(data_dir, save_dir, score_threshold):
 				seq_file_save.write(data_line + '\n')
 		seq_file_save.close()
 
-	# remove the ID in the trk with id folder for detection evaluation
+	# remove the ID in the trk with id folder for detection evaluation and tracking visualization
 	trk_id_dir = os.path.join(data_dir, 'trk_withid')
 	seq_dir_list, num_seq = load_list_from_folder(trk_id_dir)
 	save_dir_tmp = os.path.join(save_dir, 'trk_withid')
