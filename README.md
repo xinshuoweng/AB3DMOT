@@ -105,7 +105,7 @@ Note that, please run the code when the CPU is not occupied by other programs ot
 
 ### 3D MOT Evaluation on KITTI MOT Validation Set
 
-To reproduce the quantitative 3D MOT results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
+To reproduce the quantitative **3D MOT** results of our 3D MOT system on KITTI MOT **validation** set, please run:
   ```
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val
@@ -122,7 +122,7 @@ Then, the results should be exactly same as below, except for the FPS which migh
  
 ### 2D MOT Evaluation on KITTI MOT Validation Set
 
-To obtain the quantitative 2D MOT results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
+To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI MOT **validation** set, please run:
   ```
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val 2D
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val 2D
@@ -138,13 +138,13 @@ Then, the results should be exactly same as below, except for the FPS which migh
   
 ### 2D MOT Evaluation on KITTI MOT Test Set
 
-To reproduce the quantitative 2D MOT results of our 3D MOT system using the official KITTI 2D MOT evaluation server for Car and Pedestrian, please run the following: 
+To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI MOT **test set**, please run the following: 
 ```
   $ python trk_conf_threshold.py pointrcnn_Car_test
   $ python trk_conf_threshold.py pointrcnn_Pedestrian_test
   $ python combine_trk_cat.py
   ```
-Then compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation
+Then compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation. Note that KITTI does not release the ground truth labels to user, so we have to use the official KITTI 2D MOT evaluation server for evaluation, which does not include our new metrics 
   ```
   $ ./results/pointrcnn_test_thres/data
   ```
@@ -158,10 +158,10 @@ The results should be similar to our entry shown below on the KITTI 2D MOT leade
 
 To visualize the qualitative results of our 3D MOT system on images shown in the paper (Note that the opencv3 is required by this step, please check the opencv version if there is an error):
   ```
-  $ python visualization.py pointrcnn_Car_test_thres
+  $ python visualization.py pointrcnn_test_thres
   ```
 
-Visualization results are then saved to "./results/car_3d_det_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
+Visualization results are then saved to "./results/pointrcnn_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
  
 ### Acknowledgement
 Part of the code is borrowed from "[SORT](https://github.com/abewley/sort)"
