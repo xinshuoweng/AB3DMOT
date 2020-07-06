@@ -145,7 +145,7 @@ To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI M
   $ python trk_conf_threshold.py pointrcnn_Pedestrian_test
   $ python combine_trk_cat.py
   ```
-Then compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation. Note that KITTI does not release the ground truth labels to user, so we have to use the official KITTI 2D MOT evaluation server for evaluation, which does not include our new metrics 
+Then, compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation. Note that KITTI does not release the ground truth labels to users, so we have to use the official KITTI 2D MOT evaluation server for evaluation, which does not include our new metrics.
   ```
   $ ./results/pointrcnn_test_thres/data
   ```
