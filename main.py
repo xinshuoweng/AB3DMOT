@@ -1,6 +1,5 @@
 # Author: Xinshuo Weng
 # email: xinshuo.weng@gmail.com
-# partially borrowed from SORT
 
 from __future__ import print_function
 import matplotlib; matplotlib.use('Agg')
