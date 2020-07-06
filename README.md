@@ -103,9 +103,9 @@ Then, the results will be saved to "./results" folder. In detail, results in "./
 
 Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
 
-### 3D MOT Evaluation
+### 3D MOT Evaluation on KITTI MOT Validation Set
 
-To reproduce the quantitative results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
+To reproduce the quantitative 3D MOT results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
   ```
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val
@@ -120,22 +120,26 @@ Then, the results should be exactly same as below, except for the FPS which migh
  *Cyclist*      |  72.94     | 37.95     | 63.03     | 79.82    |  76.55  |  0  | 4    | 55  | 217  | 1241.6
  *Overall*      |  80.20     | 37.72     | 64.78     | 78.52    |  74.25  |  1  | 93   | 696 | 3713 | -
  
-### Visualization
+### 2D MOT Evaluation on KITTI MOT Validation Set
 
-To reproduce the qualitative results of our 3D MOT system shown in the paper:
+To obtain the quantitative 2D MOT results of our 3D MOT system using the proposed KITTI-3DMOT evaluation tool, please run:
+  ```
+  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val 2D
+  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val 2D
+  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_val 2D
+  ```
+Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. 
 
-1. Threshold the trajectories using a proper threshold
-2. Draw the remaining 3D trajectories on the images (Note that the opencv3 is required by this step, please check the opencv version if there is an error)
+ Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
+--------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
+ *Car*          |  93.01     | 45.21     | 84.61     | 85.70    |  86.99  |  2  | 24   | 391 | 805  | 207.4
+ *Pedestrian*   |  65.89     | 24.29     | 49.15     | 59.76    |  67.27  |  52 | 371  | 683 | 3203 | 470.1
+  
+### 2D MOT Evaluation on KITTI MOT Test Set
+
+To reproduce the quantitative 2D MOT results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
   ```
   $ python trk_conf_threshold.py pointrcnn_Car_test
-  $ python visualization.py pointrcnn_Car_test_thres
-  ```
-
-Visualization results are then saved to "./results/car_3d_det_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
-
-### 2D MOT Evaluation
-To reproduce the quantitative results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
-  ```
   $ ./results/pointrcnn_Car_test_thres/data
   ```
 Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard: 
@@ -143,7 +147,15 @@ Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard
  Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
  *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 214.7
- 
+
+### Visualization
+
+To visualize the qualitative results of our 3D MOT system on images shown in the paper (Note that the opencv3 is required by this step, please check the opencv version if there is an error):
+  ```
+  $ python visualization.py pointrcnn_Car_test_thres
+  ```
+
+Visualization results are then saved to "./results/car_3d_det_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
  
 ### Acknowledgement
 Part of the code is borrowed from "[SORT](https://github.com/abewley/sort)"
