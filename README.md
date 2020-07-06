@@ -160,7 +160,7 @@ The results should be similar to our entry shown below on the KITTI 2D MOT leade
 
 To visualize the qualitative results of our 3D MOT system on images shown in the paper (Note that the opencv3 is required by this step, please check the opencv version if there is an error):
   ```
-  $ python visualization.py pointrcnn_test_thres
+  $ python visualization.py pointrcnn_Car_test_thres
   ```
 Visualization results are then saved to "./results/pointrcnn_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
  
