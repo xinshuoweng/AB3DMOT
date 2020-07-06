@@ -109,7 +109,7 @@ To reproduce the quantitative results of our 3D MOT system using the proposed KI
   ```
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val
   $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val
-  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_test
+  $ python evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_val
   ```
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. The overall performance is the performance averaged over three categoeries for sAMOTA, AMOTA, AMOTP, MOTA, MOTP and the summed over three categories for IDS, FRAG, FP, FN.
 
