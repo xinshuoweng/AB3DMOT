@@ -151,10 +151,10 @@ Then, compress the folder below and upload to http://www.cvlibs.net/datasets/kit
   ```
 The results should be similar to our entry shown below on the KITTI 2D MOT leaderboard. Note that we only have results for Car and Pedestrian because KITTI 2D MOT benchmark only supports to evaluate these two categories, not including the Cyclist. 
 
- Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
---------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
- *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 214.7
- *Pedestrian*   | 39.63    |  64.87  | 16.84  | 41.58  | 170 | 940  | 351.8
+ Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG |  FP  |   FN  | FPS 
+--------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:----:|:-----:|:---:
+ *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 1059 | 4491  | 214.7
+ *Pedestrian*   | 39.63    |  64.87  | 16.84  | 41.58  | 170 | 940  | 2098 | 11707 | 351.8
 
 ### Visualization
 
