@@ -98,7 +98,6 @@ To run our tracker on the KITTI MOT test set with the provided detection:
 ```
 $ python main.py pointrcnn_Car_test
 $ python main.py pointrcnn_Pedestrian_test
-$ python main.py pointrcnn_Cyclist_test
 ```
 Then, the results will be saved to "./results" folder. In detail, results in "./results/data" folder are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). On the other hand, results in "./results/trk_withid" folder are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID in the last column.
 
@@ -133,9 +132,10 @@ Then, the results should be exactly same as below, except for the FPS which migh
 
  Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
 --------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  93.01     | 45.21     | 84.61     | 85.70    |  86.99  |  2  | 24   | 391 | 805  | 207.4
- *Pedestrian*   |  65.89     | 24.29     | 49.15     | 59.76    |  67.27  |  52 | 371  | 683 | 3203 | 470.1
- *Cyclist*      |  72.09     | 37.65     | 67.47     | 78.78    |  85.40  |  0  | 8    | 64  | 222  | 1241.6
+ *Car*          |  93.01     | 45.21     | 84.61     | 85.70    |  86.99  |  2  | 24   | 391  | 805  | 207.4
+ *Pedestrian*   |  65.89     | 24.29     | 49.15     | 59.76    |  67.27  |  52 | 371  | 683  | 3203 | 470.1
+ *Cyclist*      |  72.09     | 37.65     | 67.47     | 78.78    |  85.40  |  0  | 8    | 64   | 222  | 1241.6
+ *Overall*      |  77.00     | 35.72     | 67.08     | 74.75    |  79.89  |  54 | 403  | 1138 | 4230 | -
   
 ### 2D MOT Evaluation on KITTI MOT Test Set
 
@@ -154,6 +154,7 @@ The results should be similar to our entry shown below on the KITTI 2D MOT leade
  Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
  *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 214.7
+ *Pedestrian*   | 39.63    |  64.87  | 16.84  | 41.58  | 170 | 940  | 351.8
 
 ### Visualization
 
@@ -161,7 +162,6 @@ To visualize the qualitative results of our 3D MOT system on images shown in the
   ```
   $ python visualization.py pointrcnn_test_thres
   ```
-
 Visualization results are then saved to "./results/pointrcnn_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
  
 ### Acknowledgement
