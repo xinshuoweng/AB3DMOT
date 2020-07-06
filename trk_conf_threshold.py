@@ -4,9 +4,8 @@
 import os, sys
 from xinshuo_io import load_txt_file, load_list_from_folder, mkdir_if_missing, fileparts
 
-score_threshold = 2.917300
-
-def conf_thresholding(data_dir, save_dir):
+def conf_thresholding(data_dir, save_dir, score_threshold):
+	
 	# collect all trajectories
 	tracker_id_score = dict()
 	eval_dir = os.path.join(data_dir, 'data')
@@ -44,34 +43,22 @@ def conf_thresholding(data_dir, save_dir):
 	
 		seq_file_save.close()
 
-	# remove the ID in the trk with id folder
-	trk_id_dir = os.path.join(data_dir, 'trk_withid')
-	seq_dir_list, num_seq = load_list_from_folder(trk_id_dir)
-	save_dir_tmp = os.path.join(save_dir, 'trk_withid')
-	for seq_dir in seq_dir_list:
-		frame_list, num_frame = load_list_from_folder(seq_dir)
-		seq_name = fileparts(seq_dir)[1]
-		save_frame_dir = os.path.join(save_dir_tmp, seq_name); mkdir_if_missing(save_frame_dir)
-		for frame in frame_list:
-			frame_index = fileparts(frame)[1]
-			frame_file_save = os.path.join(save_frame_dir, frame_index+'.txt'); frame_file_save = open(frame_file_save, 'w')	
-			frame_data, num_line = load_txt_file(frame)
-			for data_line in frame_data:
-				data_split = data_line.split(' ')
-				id_tmp = int(data_split[-1])
-				if id_tmp not in to_delete_id:
-					frame_file_save.write(data_line + '\n')
-
-			frame_file_save.close()
-
 if __name__ == '__main__':
 	if len(sys.argv) != 2:
 		print('Usage: python trk_conf_threshold.py result_sha(e.g., pointrcnn_Car_test)')
 		sys.exit(1)
 
 	result_sha = sys.argv[1]
+
+	cat = result_sha.split('_')[1]
+	if cat == 'Car':
+		score_threshold = 2.917300
+	elif cat == 'Pedestrian':
+		score_threshold = 2.070726
+	else: assert False, 'error'
+
 	root_dir = './results'
 	data_dir = os.path.join(root_dir, result_sha)
 	save_dir = os.path.join(root_dir, result_sha+'_thres'); mkdir_if_missing(save_dir)
 
-	conf_thresholding(data_dir, save_dir)
+	conf_thresholding(data_dir, save_dir, score_threshold)
