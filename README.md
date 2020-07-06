@@ -134,15 +134,21 @@ Then, the results should be exactly same as below, except for the FPS which migh
 --------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
  *Car*          |  93.01     | 45.21     | 84.61     | 85.70    |  86.99  |  2  | 24   | 391 | 805  | 207.4
  *Pedestrian*   |  65.89     | 24.29     | 49.15     | 59.76    |  67.27  |  52 | 371  | 683 | 3203 | 470.1
+ *Cyclist*      |  72.09     | 37.65     | 67.47     | 78.78    |  85.40  |  0  | 8    | 64  | 222  | 1241.6
   
 ### 2D MOT Evaluation on KITTI MOT Test Set
 
-To reproduce the quantitative 2D MOT results of our 3D MOT system using the official KITTI 2D MOT evaluation server for car category shown in the paper, please compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php
-  ```
+To reproduce the quantitative 2D MOT results of our 3D MOT system using the official KITTI 2D MOT evaluation server for Car and Pedestrian, please run the following: 
+```
   $ python trk_conf_threshold.py pointrcnn_Car_test
-  $ ./results/pointrcnn_Car_test_thres/data
+  $ python trk_conf_threshold.py pointrcnn_Pedestrian_test
+  $ python combine_trk_cat.py
   ```
-Then, the results should be similar to our entry on the KITTI 2D MOT leaderboard: 
+Then compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation
+  ```
+  $ ./results/pointrcnn_test_thres/data
+  ```
+The results should be similar to our entry shown below on the KITTI 2D MOT leaderboard. Note that we only have results for Car and Pedestrian because KITTI 2D MOT benchmark only supports to evaluate these two categories, not including the Cyclist. 
 
  Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG | FPS 
 --------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:---:
