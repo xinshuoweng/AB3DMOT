@@ -1,4 +1,4 @@
-# Advancing 3D Multi-Object Tracking: A Baseline and New Evaluation Metrics
+# 3D Multi-Object Tracking: A Baseline and New Evaluation Metrics
 
 <img align="center" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main.gif">
 
