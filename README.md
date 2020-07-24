@@ -7,9 +7,9 @@ This repository contains the official python implementation for "[3D Multi-Objec
 ```
 @article{Weng2019_3dmot, 
 author = {Weng, Xinshuo and Wang, Jianren and Held, David and Kitani, Kris}, 
-journal = {arXiv:1907.03961}, 
+journal = {IROS}, 
 title = {{3D Multi-Object Tracking: A Baseline and New Evaluation Metrics}}, 
-year = {2019} 
+year = {2020} 
 }
 ```
 
