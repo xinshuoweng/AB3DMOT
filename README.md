@@ -5,7 +5,7 @@
 This repository contains the official python implementation for "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](https://arxiv.org/pdf/1907.03961.pdf)". If you find this code useful, please cite our paper:
 
 ```
-@article{Weng2019_3dmot, 
+@article{Weng2020_AB3DMOT, 
 author = {Weng, Xinshuo and Wang, Jianren and Held, David and Kitani, Kris}, 
 journal = {IROS}, 
 title = {{3D Multi-Object Tracking: A Baseline and New Evaluation Metrics}}, 
