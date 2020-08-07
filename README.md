@@ -30,6 +30,7 @@ year = {2020}
 - [Acknowledgement](#acknowledgement)
 
 ## News
+- Aug. 06, 2020: Extended abstract accepted at two ECCV workshops: Women in Computer Vision, Workshop on Perception for Autonomous Driving
 - Jul. 05, 2020: 2D MOT results on KITTI for all three categories released
 - Jul. 04, 2020: Code modularized and a minor bug in KITTI evaluation for DontCare objects fixed
 - Jun. 30, 2020: Paper accepted at IROS 2020
