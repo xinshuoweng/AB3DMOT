@@ -2,7 +2,7 @@
 
 <img align="center" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main.gif">
 
-This repository contains the official python implementation for "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](https://arxiv.org/pdf/1907.03961.pdf)". If you find this code useful, please cite our papers:
+This repository contains the official python implementation for our full paper at IROS 2020 "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](https://arxiv.org/pdf/1907.03961.pdf)" and short paper at ECCVW 2020. If you find this code useful, please cite our papers:
 
 ```
 @article{Weng2020_AB3DMOTiros, 
