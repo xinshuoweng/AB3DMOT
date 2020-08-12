@@ -1,8 +1,8 @@
-# 3D Multi-Object Tracking: A Baseline and New Evaluation Metrics (IROS 2020, ECCVW 2020)
+# AB3DMOT
 
-<img align="center" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main.gif">
+3D Multi-Object Tracking: A Baseline and New Evaluation Metrics (IROS 2020, ECCVW 2020)
 
-This repository contains the official python implementation for our full paper at IROS 2020 "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](https://arxiv.org/pdf/1907.03961.pdf)" and short paper at ECCVW 2020. If you find this code useful, please cite our papers:
+This repository contains the official python implementation for our full paper at IROS 2020 "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT/camera_ready.pdf)" and short paper "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT_eccvw/camera_ready.pdf)" at ECCVW 2020. Our project website is [here](http://www.xinshuoweng.com/projects/AB3DMOT/). If you find this code useful, please cite our papers:
 
 ```
 @article{Weng2020_AB3DMOTiros, 
@@ -20,6 +20,8 @@ title = {{AB3DMOT: A Baseline for 3D Multi-Object Tracking and New Evaluation Me
 year = {2020} 
 }
 ```
+
+<img align="center" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main.gif">
 
 ## Overview
 - [News](#news)
