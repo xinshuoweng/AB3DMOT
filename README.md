@@ -2,7 +2,7 @@
 
 <b>3D Multi-Object Tracking: A Baseline and New Evaluation Metrics (IROS 2020, ECCVW 2020)</b>
 
-This repository contains the official python implementation for our full paper at IROS 2020 "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT/camera_ready.pdf)" and short paper "[AB3DMOT: A Baseline for 3D Multi-Object Tracking and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT_eccvw/camera_ready.pdf)" at ECCVW 2020. Our project website is [here](http://www.xinshuoweng.com/projects/AB3DMOT/). If you find this code useful, please cite our papers:
+This repository contains the official python implementation for our full paper at IROS 2020 "[3D Multi-Object Tracking: A Baseline and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT/camera_ready.pdf)" and short paper "[AB3DMOT: A Baseline for 3D Multi-Object Tracking and New Evaluation Metrics](http://www.xinshuoweng.com/papers/AB3DMOT_eccvw/camera_ready.pdf)" at ECCVW 2020. Our project website and video demos are [here](http://www.xinshuoweng.com/projects/AB3DMOT/). If you find our paper or code useful, please cite our papers:
 
 ```
 @article{Weng2020_AB3DMOT, 
@@ -32,7 +32,7 @@ year = {2020}
 - [Acknowledgement](#acknowledgement)
 
 ## News
-- Aug. 06, 2020: Extended abstract accepted at two ECCV workshops: Women in Computer Vision, Workshop on Perception for Autonomous Driving
+- Aug. 06, 2020: Extended abstract (one oral) accepted at two ECCV workshops: Women in Computer Vision, Perception for Autonomous Driving
 - Jul. 05, 2020: 2D MOT results on KITTI for all three categories released
 - Jul. 04, 2020: Code modularized and a minor bug in KITTI evaluation for DontCare objects fixed
 - Jun. 30, 2020: Paper accepted at IROS 2020
