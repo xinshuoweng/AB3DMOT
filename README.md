@@ -32,7 +32,7 @@ year = {2020}
 - [Acknowledgement](#acknowledgement)
 
 ## News
-- Aug. 06, 2020: Extended abstract (one oral) accepted at ECCV workshops: [WiCV](https://sites.google.com/view/wicvworkshop-eccv2020/), PAD
+- Aug. 06, 2020: Extended abstract (one oral) accepted at ECCV workshops: [WiCV](https://sites.google.com/view/wicvworkshop-eccv2020/), [PAD](https://sites.google.com/view/pad2020/accepted-papers?authuser=0)
 - Jul. 05, 2020: 2D MOT results on KITTI for all three categories released
 - Jul. 04, 2020: Code modularized and a minor bug in KITTI evaluation for DontCare objects fixed
 - Jun. 30, 2020: Paper accepted at IROS 2020
