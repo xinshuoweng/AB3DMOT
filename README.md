@@ -21,7 +21,7 @@ year = {2020}
 }
 ```
 
-<img align="center" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main.gif">
+<img align="center" width="98%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main.gif">
 
 ## Overview
 - [News](#news)
