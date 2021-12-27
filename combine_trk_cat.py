@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	split = 'test'
 	seq_list = ['%04d' % tmp for tmp in range(0, 29)]
 	method = 'pointrcnn'
-	cat_list = ['Car', 'Pedestrian']		# no cyclist due to KITTI does not include in MOT benchmarks
+	cat_list = ['Car', 'Pedestrian', 'Cyclist']		
 	subset = ['%s_%s_%s_thres' % (method, cat, split) for cat in cat_list]
 
 	# save path

@@ -68,10 +68,9 @@ if __name__ == '__main__':
 	result_sha = sys.argv[1]
 
 	cat = result_sha.split('_')[1]
-	if cat == 'Car':
-		score_threshold = 2.917300
-	elif cat == 'Pedestrian':
-		score_threshold = 2.070726
+	if cat == 'Car':          score_threshold = 2.917300		# for car_test_3d on 2D evaluation, fixed
+	elif cat == 'Pedestrian': score_threshold = 2.070726		# for ped_test_3d on 2D evaluation, fixed
+	elif cat == 'Cyclist':	  score_threshold = 3.019068		# val 3d for now	
 	else: assert False, 'error'
 
 	root_dir = './results'
