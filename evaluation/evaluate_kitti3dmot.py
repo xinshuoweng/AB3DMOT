@@ -1194,4 +1194,3 @@ if __name__ == "__main__":
 
     # evaluate results
     success = evaluate(result_sha,mail,eval_3diou,eval_2diou)
-    

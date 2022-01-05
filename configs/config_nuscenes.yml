@@ -1,0 +1,9 @@
+# --------------- main.py
+score_threshold              : -10000     # filter out tracklet with low confidence if necessary
+hypothesis                   : 1          # >1 to allow MHT
+dataset                      : nuScenes      # KITTI, nuScenes
+split                        : train        # val, test
+
+# --------------- model.py
+max_age                      : 2
+min_birth                    : 3

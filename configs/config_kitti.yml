@@ -1,0 +1,21 @@
+# ------------------- General Options -------------------------
+description                  : AB3DMOT
+seed                         : 0
+
+kitti_det_root               : ./data/KITTI/tracking/produced/det
+kitti_trk_root               : ./data/KITTI/tracking
+kitti_obj_root               : ./data/KITTI/object
+save_root                    : ./results
+
+# --------------- main.py
+score_threshold              : -10000     # filter out tracklet with low confidence if necessary
+hypothesis                   : 1          # >1 to allow multi-hypothesis tracking
+dataset                      : KITTI      # KITTI
+split                        : val        # val, test
+det_method                   : pointrcnn  # name of the detector [pointrcnn, pvrcnn]
+cat_list                     : ['Car', 'Pedestrian', 'Cyclist']
+
+# --------------- model.py
+max_age                      : 2
+min_hits                     : 3
+ego_com                      : false

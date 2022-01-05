@@ -1,0 +1,18 @@
+# ------------------- General Options -------------------------
+description                  : AB3DMOT
+seed                         : 0
+
+kitti_det_root               : /mnt/nas/xinshuo/datasets/KITTI/tracking/produced/det
+kitti_trk_root               : /mnt/nas/xinshuo/datasets/KITTI/tracking
+kitti_obj_root               : /mnt/nas/xinshuo/datasets/KITTI/object
+
+nuscenes_det_root            : /mnt/nas/xinshuo/datasets/nuScenes/data/produced/kitti_format/tracking/produced/det
+nuscenes_trk_root            : /mnt/nas/xinshuo/datasets/nuScenes/data/produced/kitti_format/tracking
+
+# --------------- vis_all_mayavi.py
+lidar_width                  : 1440
+lidar_height                 : 1080
+camera_width                 : 1920
+camera_height                : 720
+num_threads                  : 20
+parallel_function_path       : /home/xinshuo/workspace/code/Xinshuo_PyToolbox/xinshuo_miscellaneous/cpp/parallel

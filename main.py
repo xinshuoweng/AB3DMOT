@@ -3,35 +3,39 @@
 
 from __future__ import print_function
 import matplotlib; matplotlib.use('Agg')
-import os, numpy as np, time, sys
+import os, numpy as np, time, sys, argparse
 from AB3DMOT_libs.model import AB3DMOT
+from AB3DMOT_libs.utils import load_detection
 from xinshuo_io import load_list_from_folder, fileparts, mkdir_if_missing
 
-if __name__ == '__main__':
-	if len(sys.argv) != 2:
-		print('Usage: python main.py result_sha(e.g., pointrcnn_Car_test)')
-		sys.exit(1)
+def parse_args():
 
-	result_sha = sys.argv[1]
-	save_root = './results'
-	det_id2str = {1:'Pedestrian', 2:'Car', 3:'Cyclist'}
+    """Parse input arguments."""
+    parser = argparse.ArgumentParser(description='AB3DMOT')
+    parser.add_argument('config', type=str, default='config_kitti', help='name of the detection folder')
+    args = parser.parse_args()
+    return args
 
-	seq_file_list, num_seq = load_list_from_folder(os.path.join('data/KITTI', result_sha))
+def main_per_cat(cat, det_method, ID_start):
+
+	result_sha = ''
+	subfolder, det_id2str, hw, seq_eval = get_subfolder_seq(cfg.dataset, cfg.split)
+
+	seq_file_list, num_seq = load_list_from_folder(os.path.join('data', cfg.dataset, args.result_sha))
 	total_time, total_frames = 0.0, 0
-	save_dir = os.path.join(save_root, result_sha); mkdir_if_missing(save_dir)
+	save_dir = os.path.join(cfg.save_root, args.result_sha); mkdir_if_missing(save_dir)
 	eval_dir = os.path.join(save_dir, 'data'); mkdir_if_missing(eval_dir)
 	seq_count = 0
-	for seq_file in seq_file_list:
+	num_seq = len(seq_eval)
+	for seq_name in seq_eval:
+		seq_file = os.path.join('data', cfg.dataset, dir_name, seq_name+'.txt')
 		_, seq_name, _ = fileparts(seq_file)
 		eval_file = os.path.join(eval_dir, seq_name + '.txt'); eval_file = open(eval_file, 'w')
 		save_trk_dir = os.path.join(save_dir, 'trk_withid', seq_name); mkdir_if_missing(save_trk_dir)
 
 		mot_tracker = AB3DMOT() 
-		seq_dets = np.loadtxt(seq_file, delimiter=',')          # load detections, N x 15
-		
-		# if no detection in a sequence
-		if len(seq_dets.shape) == 1: seq_dets = np.expand_dims(seq_dets, axis=0) 	
-		if seq_dets.shape[1] == 0:
+		seq_dets, flag = load_detection(seq_file)
+		if not flag:
 			eval_file.close()
 			continue
 
@@ -85,3 +89,33 @@ if __name__ == '__main__':
 		seq_count += 1
 		eval_file.close()    
 	print('Total Tracking took: %.3f for %d frames or %.1f FPS' % (total_time, total_frames, total_frames / total_time))
+
+def main(args):
+
+	# load config files
+	config_path = './config/%s.yml' % args.cfg
+	cfg, settings_show = Config(config_path)
+	time_str = get_timestring()
+	log = open(os.path.join(cfg.save_root, 'log_%s_%s_%s.txt' % (time_str, cfg.dataset, cfg.split)), 'w')
+	for idx, data in enumerate(settings_show):
+        print_log(data, log, display=False)
+
+	# global ID counter used for all categories, not start from 0 for each category to prevent different 
+	# categories of objects have the same ID. This allows visualization of all object categories together
+	# without ID conflicting
+	ID_start = 0 								
+
+	# run tracking for each category
+	for cat in cfg.cat_list:
+		ID_start = main_per_cat(cat, cfg.det_method, ID_start)
+
+if __name__ == '__main__':
+
+	args = parse_args()
+	
+	# check arguments
+	if len(sys.argv) != 2:
+		print('Usage: python main.py config (e.g., config_kitti)')
+		sys.exit(1)
+
+	main(args)
