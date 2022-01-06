@@ -49,17 +49,47 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.01):
 
 	return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
 
-class AB3DMOT(object):			  # A baseline of 3D multi-object tracking
-	def __init__(self, max_age=2, min_hits=3):      # max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
-		"""
-		Sets key parameters for SORT                
-		"""
-		self.max_age = max_age
-		self.min_hits = min_hits
+class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
+	def __init__(self, cfg, cat, ego_com=True, calib=None, oxts=None, img_dir=None, vis_dir=None, hw=None, log=None, ID_init=0):      
+		# Sets key parameters              
+		self.get_param(cfg, cat)
 		self.trackers = []
 		self.frame_count = 0
 		self.reorder = [3, 4, 5, 6, 2, 1, 0]
 		self.reorder_back = [6, 5, 4, 0, 1, 2, 3]
+		self.ID_count = [ID_init]
+
+	def get_param(self, cfg, cat):
+		if cfg.dataset == 'KITTI':
+			# # good parameters
+			if cat == 'Car': 			metric, thres = 'iou', 0.01
+			elif cat == 'Pedestrian': 	metric, thres = 'dist', 1 		
+			elif cat == 'Cyclist': 		metric, thres = 'dist', 2
+
+			# bad parameters
+			# if cat == 'Car': 			metric, thres = 'dist', 6
+			# elif cat == 'Pedestrian': 	metric, thres = 'dist', 1 		
+			# elif cat == 'Cyclist': 		metric, thres = 'dist', 6
+			# else: assert False, 'error'
+
+			self.max_age = 2 		# max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
+			self.min_hits = 3
+
+		elif cfg.dataset == 'nuScenes':
+			if cat == 'Car': 			metric, thres = 'dist', 10
+			elif cat == 'Pedestrian': 	metric, thres = 'dist', 6 		# add negative due to it is the cost
+			elif cat == 'Bicycle': 		metric, thres = 'dist', 6
+			elif cat == 'Motorcycle':	metric, thres = 'dist', 10
+			elif cat == 'Bus': 			metric, thres = 'dist', 10
+			elif cat == 'Trailer': 		metric, thres = 'dist', 10
+			elif cat == 'Truck': 		metric, thres = 'dist', 10
+			else: assert False, 'error'
+		else: assert False, 'no such dataset'
+
+		# add negative due to it is the cost
+		if metric == 'dist': thres *= -1	
+
+		self.metric, self.thres = metric, thres
 
 	def update(self, dets_all):
 		"""
@@ -105,10 +135,13 @@ class AB3DMOT(object):			  # A baseline of 3D multi-object tracking
 				trk.update(dets[d, :][0], info[d, :][0])
 
 		# create and initialise new trackers for unmatched detections
-		for i in unmatched_dets:        # a scalar of index
-			trk = KalmanBoxTracker(dets[i, :], info[i, :]) 
+		for i in unmatched_dets:        			# a scalar of index
+			trk = KalmanBoxTracker(dets[i, :], info[i, :], self.ID_count[0])
 			self.trackers.append(trk)
+			self.ID_count[0] += 1
 		i = len(self.trackers)
+		
+		# output
 		for trk in reversed(self.trackers):
 			d = trk.get_state()      # bbox location
 			d = d[self.reorder_back]			# change format from [x,y,z,theta,l,w,h] to [h,w,l,x,y,z,theta]
@@ -120,5 +153,8 @@ class AB3DMOT(object):			  # A baseline of 3D multi-object tracking
 			# remove dead tracklet
 			if (trk.time_since_update >= self.max_age): 
 				self.trackers.pop(i)
-		if (len(ret) > 0): return np.concatenate(ret)			# h,w,l,x,y,z,theta, ID, other info, confidence
-		return np.empty((0, 15))    
+		
+		if len(ret) > 0: ret = [np.concatenate(ret)]			# h,w,l,x,y,z,theta, ID, other info, confidence
+		else:            ret = [np.empty((0, 15))]
+
+		return ret

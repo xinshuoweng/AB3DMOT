@@ -1,6 +1,10 @@
 # ------------------- General Options -------------------------
 description                  : AB3DMOT
 seed                         : 0
+
+kitti_det_root               : ./data/KITTI/tracking/produced/det
+kitti_trk_root               : ./data/KITTI/tracking
+kitti_obj_root               : ./data/KITTI/object
 save_root                    : ./results
 
 # --------------- main.py

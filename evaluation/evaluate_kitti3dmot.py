@@ -76,7 +76,8 @@ class trackingEvaluation(object):
              missed         - number of missed targets (FN)
     """
 
-    def __init__(self, t_sha, gt_path="./evaluation", max_truncation = 0, min_height = 25, max_occlusion = 2, mail=None, cls="car", eval_3diou=True, eval_2diou=False):
+    def __init__(self, t_sha, gt_path="./evaluation", max_truncation = 0, min_height = 25, max_occlusion = 2, \
+        mail=None, cls="car", eval_3diou=True, eval_2diou=False, num_hypo=1):
         # get number of sequences and
         # get number of frames per sequence from test mapping
         # (created while extracting the benchmark)
@@ -100,7 +101,7 @@ class trackingEvaluation(object):
         # data and parameter
         self.gt_path           = os.path.join(gt_path, "label")
         self.t_sha             = t_sha
-        self.t_path            = os.path.join("./results", t_sha, "data")
+        self.t_path            = os.path.join("./results", t_sha, "data_H%d" % (int(num_hypo)-1))
         
         # statistics and numbers for evaluation
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
@@ -1085,7 +1086,7 @@ class stat:
         self.plot_over_recall(self.fn_list, 'False Negative - Recall Curve', 'False Negative', os.path.join(save_dir, 'FN_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.precision_list, 'Precision - Recall Curve', 'Precision', os.path.join(save_dir, 'precision_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
 
-def evaluate(result_sha,mail,eval_3diou,eval_2diou):
+def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou):
     """
         Entry point for evaluation, will load the data and start evaluation for
         CAR and PEDESTRIAN if available.
@@ -1101,7 +1102,7 @@ def evaluate(result_sha,mail,eval_3diou,eval_2diou):
     classes = []
     for c in ("car", "pedestrian", "cyclist"):
     # for c in ("car"):
-        e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou)
+        e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou,num_hypo=num_hypo)
         # load tracker data and check provided classes
         try:
             if not e.loadTracker():
@@ -1173,24 +1174,25 @@ if __name__ == "__main__":
 
     # check for correct number of arguments. if user_sha and email are not supplied,
     # no notification email is sent (this option is used for auto-updates)
-    if len(sys.argv)!=2 and len(sys.argv)!=3:
-      print("Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)")
+    if len(sys.argv)!=3 and len(sys.argv)!=4:
+      print("Usage: python eval_kitti3dmot.py num_hypothesis(e.g., 1) result_sha dimension(e.g., 2D or 3D)")
       sys.exit(1);
 
     # get unique sha key of submitted results
     result_sha = sys.argv[1]
+    num_hypo = sys.argv[2]
     mail = mailpy.Mail("")
     # 
-    if len(sys.argv)==3:
-        if sys.argv[2] == '2D':
+    if len(sys.argv)==4:
+        if sys.argv[3] == '2D':
             eval_3diou, eval_2diou = False, True      # eval 2d
-        elif sys.argv[2] == '3D':
+        elif sys.argv[3] == '3D':
             eval_3diou, eval_2diou = True, False        # eval 3d
         else:
-            print("Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)")
+            print("Usage: python eval_kitti3dmot.py num_hypothesis(e.g., 1) result_sha dimension(e.g., 2D or 3D)")
             sys.exit(1);            
     else:
         eval_3diou, eval_2diou = True, False        # eval 3d
 
     # evaluate results
-    success = evaluate(result_sha,mail,eval_3diou,eval_2diou)
+    success = evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou)
