@@ -40,28 +40,23 @@ def main_per_cat(cfg, cat, log, ID_start):
 
 		# create folders for saving
 		eval_file_dict, save_trk_dir = get_saving_dir(eval_dir_dict, seq_name, save_dir, cfg.hypothesis)	
-		# eval_file = os.path.join(eval_dir, seq_name + '.txt'); eval_file = open(eval_file, 'w')
-		# save_trk_dir = os.path.join(save_dir, 'trk_withid', seq_name); mkdir_if_missing(save_trk_dir)
 
+		# initialize tracker
 		tracker = initialize(cfg, trk_root, save_dir, subfolder, seq_name, cat, ID_start, hw, log)
-		# mot_tracker = AB3DMOT() 
 
 		# loop over frame
 		min_frame, max_frame = int(seq_dets[:, 0].min()), int(seq_dets[:, 0].max())
 		for frame in range(min_frame, max_frame + 1):
 			
 			# logging
-			# print_str = 'processing %s: %d/%d, %d/%d   \r' % (seq_name, seq_count, len(seq_eval), frame, max_frame)
 			print_str = 'processing %s %s: %d/%d, %d/%d   \r' % (result_sha, seq_name, seq_count, len(seq_eval), frame, max_frame)
 			sys.stdout.write(print_str)
 			sys.stdout.flush()
 
-			# get detections
+			# tracking by detection
 			dets_frame = get_frame_det(seq_dets, frame)
-
-			# tracking
 			since = time.time()
-			results = tracker.update(dets_frame)
+			results, affi = tracker.track(dets_frame, frame, seq_name)		
 			total_time += time.time() - since
 
 			# saving results, loop over each hypothesis

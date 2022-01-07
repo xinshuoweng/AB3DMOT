@@ -3,7 +3,7 @@
 
 import numpy as np, copy
 from numba import jit
-from scipy.spatial import ConvexHull
+from scipy.optimize import linear_sum_assignment
 
 @jit          
 def poly_area(x,y):
@@ -17,6 +17,9 @@ def box3d_vol(corners):
 	b = np.sqrt(np.sum((corners[1,:] - corners[2,:])**2))
 	c = np.sqrt(np.sum((corners[0,:] - corners[4,:])**2))
 	return a*b*c
+
+#################### option 1 for computing polygon overlap
+from scipy.spatial import ConvexHull
 
 @jit          
 def convex_hull_intersection(p1, p2):
@@ -151,3 +154,136 @@ def convert_3dbox_to_8corner(bbox3d_input):
 	corners_3d[2,:] = corners_3d[2,:] + bbox3d[2]
 
 	return np.transpose(corners_3d)
+
+#################### comput IoU 3D
+def dist3d(corners1, corners2):
+	''' Compute 3D bounding box IoU, only working for object parallel to ground
+
+	Input:
+	    corners1: numpy array (8,3), assume up direction is negative Y
+	    corners2: numpy array (8,3), assume up direction is negative Y
+	Output:
+	    dist:		distance of two bounding boxes in 3D space
+	'''
+
+	# compute center point based on 8 corners
+	c1 = np.average(corners1, axis=0)
+	c2 = np.average(corners2, axis=0)
+
+	dist = np.linalg.norm(c1 - c2)
+
+	return dist
+
+def project_to_image(pts_3d, P):
+    ''' Project 3d points to image plane.
+
+    Usage: pts_2d = projectToImage(pts_3d, P)
+      input: pts_3d: nx3 matrix
+             P:      3x4 projection matrix
+      output: pts_2d: nx2 matrix
+
+      P(3x4) dot pts_3d_extended(4xn) = projected_pts_2d(3xn)
+      => normalize projected_pts_2d(2xn)
+
+      <=> pts_3d_extended(nx4) dot P'(4x3) = projected_pts_2d(nx3)
+          => normalize projected_pts_2d(nx2)
+    '''
+    n = pts_3d.shape[0]
+    pts_3d_extend = np.hstack((pts_3d, np.ones((n, 1))))
+    # print(('pts_3d_extend shape: ', pts_3d_extend.shape))
+    pts_2d = np.dot(pts_3d_extend, np.transpose(P)) # nx3
+    pts_2d[:, 0] /= pts_2d[:, 2]
+    pts_2d[:, 1] /= pts_2d[:, 2]
+    return pts_2d[:, 0:2]
+
+def check_outside_image(x, y, height, width):
+    if x < 0 or x >= width: return True
+    if y < 0 or y >= height: return True
+
+def draw_box3d_image(image, qs, img_size=(900, 1600), color=(255,255,255), thickness=4):
+    ''' Draw 3d bounding box in image
+        qs: (8,2) array of vertices for the 3d box in following order:
+            1 -------- 0
+           /|         /|
+          2 -------- 3 .
+          | |        | |
+          . 5 -------- 4
+          |/         |/
+          6 -------- 7
+    '''
+
+    # if 6 points of the box are outside the image, then do not draw
+    pts_outside = 0
+    for index in range(8):
+        check = check_outside_image(qs[index, 0], qs[index, 1], img_size[0], img_size[1])
+        if check: pts_outside += 1
+    if pts_outside >= 6: return image, False
+
+    # actually draw
+    if qs is not None:
+        qs = qs.astype(np.int32)
+        for k in range(0,4):
+           i,j=k,(k+1)%4
+           cv2.line(image, (qs[i,0],qs[i,1]), (qs[j,0],qs[j,1]), color, thickness, cv2.LINE_AA) # use LINE_AA for opencv3
+
+           i,j=k+4,(k+1)%4 + 4
+           cv2.line(image, (qs[i,0],qs[i,1]), (qs[j,0],qs[j,1]), color, thickness, cv2.LINE_AA)
+
+           i,j=k,k+4
+           cv2.line(image, (qs[i,0],qs[i,1]), (qs[j,0],qs[j,1]), color, thickness, cv2.LINE_AA)
+
+    return image, True
+
+def associate_detections_to_trackers(detections, trackers, metric, threshold, hypothesis=1):   
+	"""
+	Assigns detections to tracked object (both represented as bounding boxes)
+
+	detections:  N x 8 x 3
+	trackers:    M x 8 x 3
+
+	Returns 3 lists of matches, unmatched_detections and unmatched_trackers
+	"""
+
+	if len(trackers) == 0: 
+		return np.empty((0, 2), dtype=int), np.arange(len(detections)), np.empty((0, 8, 3), dtype=int), 0, None
+	aff_matrix = np.zeros((len(detections), len(trackers)), dtype=np.float32)
+
+	for d, det in enumerate(detections):
+		for t, trk in enumerate(trackers):
+			if metric == 'iou':    aff_matrix[d, t] = iou3d(det, trk)[0]             # det: 8 x 3, trk: 8 x 3
+			elif metric == 'dist': aff_matrix[d, t] = -dist3d(det, trk)              # det: 8 x 3, trk: 8 x 3		
+			else: assert False, 'error'
+
+	if hypothesis == 1:
+		# matched_indices = linear_assignment(-aff_matrix)      # hougarian algorithm, compatible to linear_assignment in sklearn.utils
+		row_ind, col_ind = linear_sum_assignment(-aff_matrix)      # hougarian algorithm
+		matched_indices = np.stack((row_ind, col_ind), axis=1)
+	else:
+		cost_list, hun_list = best_k_matching(-aff_matrix, hypothesis)
+
+	# compute cost
+	cost = 0
+	for row_index in range(matched_indices.shape[0]):
+		cost -= aff_matrix[matched_indices[row_index, 0], matched_indices[row_index, 1]]
+	# print(matched_indices.shape)
+	# zxc
+
+	unmatched_detections = []
+	for d, det in enumerate(detections):
+		if (d not in matched_indices[:, 0]): unmatched_detections.append(d)
+	unmatched_trackers = []
+	for t, trk in enumerate(trackers):
+		if (t not in matched_indices[:, 1]): unmatched_trackers.append(t)
+
+	# filter out matched with low IoU or high distance
+	matches = []
+	for m in matched_indices:
+		if (aff_matrix[m[0], m[1]] < threshold):
+			unmatched_detections.append(m[0])
+			unmatched_trackers.append(m[1])
+		else: matches.append(m.reshape(1, 2))
+	if len(matches) == 0: 
+		matches = np.empty((0, 2),dtype=int)
+	else: matches = np.concatenate(matches, axis=0)
+
+	return matches, np.array(unmatched_detections), np.array(unmatched_trackers), cost, aff_matrix
