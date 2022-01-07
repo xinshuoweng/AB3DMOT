@@ -91,7 +91,7 @@ def initialize(cfg, data_root, save_dir, subfolder, seq_name, cat, ID_start, hw,
 
 	# load image for visualization
 	img_seq = os.path.join(data_root, subfolder, 'image_02', seq_name)
-	vis_dir = os.path.join(save_dir, 'vis', seq_name); mkdir_if_missing(vis_dir)
+	vis_dir = os.path.join(save_dir, 'vis_debug', seq_name); mkdir_if_missing(vis_dir)
 
 	# initiate the tracker
 	if cfg.hypothesis > 1:

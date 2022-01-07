@@ -1,7 +1,7 @@
 # Author: Xinshuo Weng
 # email: xinshuo.weng@gmail.com
 
-import numpy as np, copy
+import numpy as np, copy, cv2
 from numba import jit
 from scipy.optimize import linear_sum_assignment
 

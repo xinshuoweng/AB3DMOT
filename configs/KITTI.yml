@@ -2,12 +2,8 @@
 description                  : AB3DMOT
 seed                         : 0
 
-kitti_det_root               : ./data/KITTI/tracking/produced/det
-kitti_trk_root               : ./data/KITTI/tracking
-kitti_obj_root               : ./data/KITTI/object
-save_root                    : ./results
-
 # --------------- main.py
+save_root                    : ./results
 score_threshold              : -10000     # filter out tracklet with low confidence if necessary
 hypothesis                   : 1          # >1 to allow multi-hypothesis tracking
 dataset                      : KITTI      # KITTI
@@ -16,6 +12,5 @@ det_method                   : pointrcnn  # name of the detector [pointrcnn, pvr
 cat_list                     : ['Car', 'Pedestrian', 'Cyclist']
 
 # --------------- model.py
-max_age                      : 2
-min_hits                     : 3
-ego_com                      : false
+ego_com                      : true      # turn on only slightly reduce speed but increase a lot for performance
+vis                          : false       # only for debug or visualization purpose, will significantly reduce speed

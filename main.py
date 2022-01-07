@@ -104,7 +104,7 @@ if __name__ == '__main__':
 	
 	# check arguments
 	if len(sys.argv) != 2:
-		print('Usage: python main.py config (e.g., config_kitti)')
+		print('Usage: python main.py config (e.g., kitti)')
 		sys.exit(1)
 
 	main(args)

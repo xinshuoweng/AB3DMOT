@@ -143,16 +143,12 @@ def get_ego_traj(imu_poses, frame, pref, futf, inverse=False, only_fut=False):
     
     if only_fut:
         fut_xyz, fut_rot_list = all_xyz[pref-left:], all_rot_list[pref-left:]
-        # print(left)
-        # print(right)
-        # assert fut_xyz.shape[0] == futf, 'error'
         return fut_xyz, fut_rot_list, left, right
     else:
         return all_xyz, all_rot_list, left, right
 
 def egomotion_compensation_ID(traj_id, calib, ego_rot_imu, ego_xyz_imu, left, right, mask=None):
     # traj_id           # N x 3
-
     # ego_imu can have frames less than pre+fut due to sequence boundary
 
     # convert trajectory data from rect to IMU for ego-motion compensation

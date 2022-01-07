@@ -1,7 +1,7 @@
 # Author: Xinshuo Weng
 # email: xinshuo.weng@gmail.com
 
-# combine KITTI tracking results from two categories for submission
+# combine KITTI tracking results from different categories for submission
 
 import os
 from xinshuo_io import load_txt_file, mkdir_if_missing, save_txt_file
