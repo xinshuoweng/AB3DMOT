@@ -3,7 +3,7 @@ description                  : AB3DMOT
 seed                         : 0
 
 # --------------- main.py
-save_root                    : ./results
+save_root                    : ./results/KITTI
 score_threshold              : -10000     # filter out tracklet with low confidence if necessary
 hypothesis                   : 1          # >1 to allow multi-hypothesis tracking
 dataset                      : KITTI      # KITTI

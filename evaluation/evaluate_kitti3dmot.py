@@ -101,7 +101,7 @@ class trackingEvaluation(object):
         # data and parameter
         self.gt_path           = os.path.join(gt_path, "label")
         self.t_sha             = t_sha
-        self.t_path            = os.path.join("./results", t_sha, "data_H%d" % (int(num_hypo)-1))
+        self.t_path            = os.path.join("./results/KITTI", t_sha, "data_%d" % (int(num_hypo)-1))
         
         # statistics and numbers for evaluation
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
@@ -1079,7 +1079,7 @@ class stat:
         # zxc
 
     def plot(self):
-        save_dir = os.path.join("./results", self.t_sha)
+        save_dir = os.path.join("./results/KITTI", self.t_sha)
 
         self.plot_over_recall(self.mota_list, 'MOTA - Recall Curve', 'MOTA', os.path.join(save_dir, 'MOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.sMOTA_list, 'sMOTA - Recall Curve', 'sMOTA', os.path.join(save_dir, 'sMOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
@@ -1104,7 +1104,6 @@ def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres):
         assert False, 'error'
     classes = []
     for c in ("car", "pedestrian", "cyclist"):
-    # for c in ("car"):
         e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou,num_hypo=num_hypo,thres=thres)
         # load tracker data and check provided classes
         try:
@@ -1178,8 +1177,8 @@ if __name__ == "__main__":
     # check for correct number of arguments. if user_sha and email are not supplied,
     # no notification email is sent (this option is used for auto-updates)
     if len(sys.argv)!=3 and len(sys.argv)!=4 and len(sys.argv)!=5:
-      print("Usage: python eval_kitti3dmot.py result_sha num_hypothesis(e.g., 1) dimension(e.g., 2D or 3D) thres(e.g., 0.25)")
-      sys.exit(1);
+        print("Usage: python3 evaluation/evaluate_kitti3dmot.py result_sha num_hypothesis(e.g., 1) dimension(e.g., 2D or 3D) thres(e.g., 0.25)")
+        sys.exit(1);
 
     # get unique sha key of submitted results
     result_sha = sys.argv[1]
@@ -1192,7 +1191,7 @@ if __name__ == "__main__":
         elif sys.argv[3] == '3D':
             eval_3diou, eval_2diou = True, False        # eval 3d
         else:
-            print("Usage: python eval_kitti3dmot.py result_sha num_hypothesis(e.g., 1) dimension(e.g., 2D or 3D) thres(e.g., 0.25)")
+            print("Usage: python3 evaluation/evaluate_kitti3dmot.py result_sha num_hypothesis(e.g., 1) dimension(e.g., 2D or 3D) thres(e.g., 0.25)")
             sys.exit(1);    
         if len(sys.argv)==5: thres = float(sys.argv[4])
         else: thres = None

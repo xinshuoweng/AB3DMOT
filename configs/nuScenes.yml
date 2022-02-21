@@ -1,9 +1,16 @@
+# ------------------- General Options -------------------------
+description                  : AB3DMOT
+seed                         : 0
+
 # --------------- main.py
+save_root                    : ./results/nuScenes
 score_threshold              : -10000     # filter out tracklet with low confidence if necessary
-hypothesis                   : 1          # >1 to allow MHT
-dataset                      : nuScenes      # KITTI, nuScenes
-split                        : train        # val, test
+hypothesis                   : 1          # >1 to allow multi-hypothesis tracking
+dataset                      : nuScenes
+split                        : val      # [train, val, test]
+det_method                   : megvii     # name of the detector [megvii, mapillary, pointpillar]
+cat_list                     : ['Car', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Bus', 'Trailer', 'Truck']
 
 # --------------- model.py
-max_age                      : 2
-min_birth                    : 3
+ego_com                      : true      # turn on only slightly reduce speed but increase a lot for performance
+vis                          : false       # only for debug or visualization purpose, will significantly reduce speed

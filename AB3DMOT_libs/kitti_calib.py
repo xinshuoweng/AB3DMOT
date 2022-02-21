@@ -1,6 +1,15 @@
 from __future__ import print_function
 import numpy as np, cv2, os
 
+def inverse_rigid_trans(Tr):
+    ''' Inverse a rigid body transform matrix (3x4 as [R|t])
+        [R'|-R't; 0|1]
+    '''
+    inv_Tr = np.zeros_like(Tr) # 3x4
+    inv_Tr[0:3,0:3] = np.transpose(Tr[0:3,0:3])
+    inv_Tr[0:3,3] = np.dot(-np.transpose(Tr[0:3,0:3]), Tr[0:3,3])
+    return inv_Tr
+
 class Calibration(object):
     ''' Calibration matrices and utils
         3d XYZ in <label>.txt are in rect camera coord.
@@ -38,6 +47,7 @@ class Calibration(object):
             calibs = self.read_calib_from_video(calib_filepath)
         else:
             calibs = self.read_calib_file(calib_filepath)
+
         # Projection matrix from rect camera coord to image2 coord
         self.P = calibs['P2'] 
         self.P = np.reshape(self.P, [3,4])
@@ -193,20 +203,3 @@ class Calibration(object):
     def project_image_to_velo(self, uv_depth):
         pts_3d_rect = self.project_image_to_rect(uv_depth)
         return self.project_rect_to_velo(pts_3d_rect)
- 
-def inverse_rigid_trans(Tr):
-    ''' Inverse a rigid body transform matrix (3x4 as [R|t])
-        [R'|-R't; 0|1]
-    '''
-    inv_Tr = np.zeros_like(Tr) # 3x4
-    inv_Tr[0:3,0:3] = np.transpose(Tr[0:3,0:3])
-    inv_Tr[0:3,3] = np.dot(-np.transpose(Tr[0:3,0:3]), Tr[0:3,3])
-    return inv_Tr
-
-def roty(t):
-    ''' Rotation about the y-axis. '''
-    c = np.cos(t)
-    s = np.sin(t)
-    return np.array([[c,  0,  s],
-                     [0,  1,  0],
-                     [-s, 0,  c]])
