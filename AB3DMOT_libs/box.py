@@ -14,6 +14,7 @@ class Box3D:
         self.l = l      # length
         self.o = o      # orientation
         self.s = None   # detection score
+        self.corners_3d_cam = None
 
     def __str__(self):
         return 'x: {}, y: {}, z: {}, heading: {}, length: {}, width: {}, height: {}, score: {}'.format(
@@ -93,10 +94,29 @@ class Box3D:
             
             Returns:
                 corners_3d: (8,3) array in in rect camera coord
-        '''
-        # compute rotational matrix around yaw axis
 
-        R = roty(bbox.o)    
+            box corner order is like follows
+                    1 -------- 0         top is bottom because y direction is negative
+                   /|         /|
+                  2 -------- 3 .
+                  | |        | |
+                  . 5 -------- 4
+                  |/         |/
+                  6 -------- 7    
+            
+            rect/ref camera coord:
+            right x, down y, front z
+
+            x -> w, z -> l, y -> h
+        '''
+
+        # if already computed before, then skip it
+        if bbox.corners_3d_cam is not None:
+            return bbox.corners_3d_cam
+
+        # compute rotational matrix around yaw axis
+        # -1.57 means straight, so there is a rotation here
+        R = roty(bbox.o)   
 
         # 3d bounding box dimensions
         l, w, h = bbox.l, bbox.w, bbox.h
@@ -111,8 +131,10 @@ class Box3D:
         corners_3d[0,:] = corners_3d[0,:] + bbox.x
         corners_3d[1,:] = corners_3d[1,:] + bbox.y
         corners_3d[2,:] = corners_3d[2,:] + bbox.z
+        corners_3d = np.transpose(corners_3d)
+        bbox.corners_3d_cam = corners_3d
 
-        return np.transpose(corners_3d)
+        return corners_3d
 
     @classmethod
     def box2corners2d(cls, bbox):

@@ -1103,7 +1103,8 @@ def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres):
     else:
         assert False, 'error'
     classes = []
-    for c in ("car", "pedestrian", "cyclist"):
+    # for c in ("car", "pedestrian", "cyclist"):
+    for c in ("cyclist", "pedestrian", "car"):
         e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou,num_hypo=num_hypo,thres=thres)
         # load tracker data and check provided classes
         try:

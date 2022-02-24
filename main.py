@@ -42,11 +42,14 @@ def main_per_cat(cfg, cat, log, ID_start):
 			get_saving_dir(eval_dir_dict, seq_name, save_dir, cfg.hypothesis)	
 
 		# initialize tracker
-		tracker = initialize(cfg, trk_root, save_dir, subfolder, seq_name, cat, ID_start, hw, log)
+		tracker, frame_list = initialize(cfg, trk_root, save_dir, subfolder, seq_name, cat, ID_start, hw, log)
 
 		# loop over frame
-		min_frame, max_frame = int(seq_dets[:, 0].min()), int(seq_dets[:, 0].max())
+		# min_frame, max_frame = int(seq_dets[:, 0].min()), int(seq_dets[:, 0].max())
+		min_frame, max_frame = int(frame_list[0]), int(frame_list[-1])
 		for frame in range(min_frame, max_frame + 1):
+			# add an additional frame here to deal with the case that the last frame, although no detection
+			# but should output an N x 0 affinity for consistency
 			
 			# logging
 			print_str = 'processing %s %s: %d/%d, %d/%d   \r' % (result_sha, seq_name, seq_count, \
@@ -62,14 +65,18 @@ def main_per_cat(cfg, cat, log, ID_start):
 
 			# saving affinity matrix, between the past frame and current frame
 			# e.g., for 000006.npy, it means affinity between frame 5 and 6
+			# note that the saved value in affinity can be different in reality because it is between the 
+			# original detections and ego-motion compensated predicted tracklets, rather than between the 
+			# actual two sets of output tracklets
 			save_affi_file = os.path.join(affinity_dir, '%06d.npy' % frame)
 			save_affi_vis  = os.path.join(affinity_vis, '%06d.txt' % frame)
-			if (affi is not None) and (affi.shape[0] > 0) and (affi.shape[1] > 0): 
+			if (affi is not None) and (affi.shape[0] + affi.shape[1] > 0): 
+				# save affinity as long as there are tracklets in at least one frame
 				np.save(save_affi_file, affi)
-				save_affinity(affi, save_affi_vis)
-				# note that the saved value in affinity can be different in reality because it is between the 
-				# original detections and ego-motion compensated predicted tracklets, rather than between the 
-				# actual two sets of output tracklets
+
+				# cannot save for visualization unless both two frames have tracklets
+				if affi.shape[0] > 0 and affi.shape[1] > 0:
+					save_affinity(affi, save_affi_vis)
 
 			# saving trajectories, loop over each hypothesis
 			for hypo in range(cfg.hypothesis):
@@ -99,7 +106,8 @@ def main(args):
 	config_path = './configs/%s.yml' % args.cfg
 	cfg, settings_show = Config(config_path)
 	time_str = get_timestring()
-	log = open(os.path.join(cfg.save_root, 'log_%s_%s_%s.txt' % (time_str, cfg.dataset, cfg.split)), 'w')
+	log = os.path.join(cfg.save_root, 'log/log_%s_%s_%s.txt' % (time_str, cfg.dataset, cfg.split))
+	mkdir_if_missing(log); log = open(log, 'w')
 	for idx, data in enumerate(settings_show):
 		print_log(data, log, display=False)
 

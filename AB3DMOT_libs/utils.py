@@ -8,7 +8,7 @@ from AB3DMOT_libs.model import AB3DMOT
 from AB3DMOT_libs.kitti_oxts import load_oxts
 from AB3DMOT_libs.kitti_calib import Calibration
 from AB3DMOT_libs.nuScenes_split import get_split
-from xinshuo_io import mkdir_if_missing, is_path_exists
+from xinshuo_io import mkdir_if_missing, is_path_exists, fileparts, load_list_from_folder
 
 def Config(filename):
     listfile1 = open(filename, 'r')
@@ -77,4 +77,8 @@ def initialize(cfg, data_root, save_dir, subfolder, seq_name, cat, ID_start, hw,
 		tracker = AB3DMOT(cfg, cat, calib=calib, oxts=imu_poses, img_dir=img_seq, vis_dir=vis_dir, hw=hw, log=log_file, ID_init=ID_start) 
 	else: assert False, 'error'
 	
-	return tracker
+	# compute the min/max frame
+	frame_list, _ = load_list_from_folder(img_seq)
+	frame_list = [fileparts(frame_file)[1] for frame_file in frame_list]
+
+	return tracker, frame_list

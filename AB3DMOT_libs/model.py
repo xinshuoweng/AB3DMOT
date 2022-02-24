@@ -3,15 +3,15 @@
 
 import numpy as np, os, copy, math
 from AB3DMOT_libs.box import Box3D
-# from AB3DMOT_libs.bbox_utils import convert_3dbox_to_8corner
-from AB3DMOT_libs.matching import associate_detections_to_trackers
+from AB3DMOT_libs.matching import data_association
 from AB3DMOT_libs.kalman_filter import KF
 from xinshuo_miscellaneous import print_log
 from xinshuo_io import mkdir_if_missing
 
 np.set_printoptions(suppress=True, precision=3)
 
-class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
+# A baseline of 3D multi-object tracking
+class AB3DMOT(object):			  	
 	def __init__(self, cfg, cat, calib=None, oxts=None, img_dir=None, vis_dir=None, hw=None, log=None, ID_init=0):                    
 		self.get_param(cfg, cat)
 		self.trackers = []
@@ -32,56 +32,62 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 		self.debug_id = None
 
 	def get_param(self, cfg, cat):
+		# get parameters for each dataset
+
 		if cfg.dataset == 'KITTI':
-			# good parameters
-			if cat == 'Car': 			metric, thres = 'iou', 0.01
-			elif cat == 'Pedestrian': 	metric, thres = 'dist', 1 		
-			elif cat == 'Cyclist': 		metric, thres = 'dist', 2
 
-			# # bad parameters
-			# if cat == 'Car': 			metric, thres = 'dist', 6
-			# elif cat == 'Pedestrian': 	metric, thres = 'dist', 1 		
-			# elif cat == 'Cyclist': 		metric, thres = 'dist', 6
+			# tuned for PointRCNN detections
+			if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'giou_3d', -0.2, 3, 2
+			elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 4 		
+			elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
+
+			# # tuned for PointRCNN detections
+			# if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'iou_3d', 0.01, 3, 2
+			# elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',   1, 1, 4 		
+			# elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d',   2, 3, 4
+
+			# # original parameters
+			# if cat == 'Car': 			metric, thres, min_hits, max_age = 'dist', 6, 3, 2
+			# elif cat == 'Pedestrian': 	metric, thres, min_hits, max_age = 'dist', 1, 3, 2		
+			# elif cat == 'Cyclist': 		metric, thres, min_hits, max_age = 'dist', 6, 3, 2
 			else: assert False, 'error'
-
-			self.max_age = 2 		# max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
-			self.min_hits = 3
 
 		elif cfg.dataset == 'nuScenes':
-			# if cat == 'Car': 			metric, thres = 'dist', 10
-			# elif cat == 'Pedestrian': 	metric, thres = 'dist', 6 		# add negative due to it is the cost
-			# elif cat == 'Bicycle': 		metric, thres = 'dist', 6
-			# elif cat == 'Motorcycle':	metric, thres = 'dist', 10
-			# elif cat == 'Bus': 			metric, thres = 'dist', 10
-			# elif cat == 'Trailer': 		metric, thres = 'dist', 10
-			# elif cat == 'Truck': 		metric, thres = 'dist', 10
-			# else: assert False, 'error'
 
-			# self.max_age = 2 		# max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
-			# self.min_hits = 3
+			# tuned for Megvii detections
+			if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 1, 2
+			elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d',  6, 1, 2
+			elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d',  6, 3, 2
+			elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 3, 2
+			elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 1, 2
+			elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 3, 2
+			elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 1, 2
 
-			if cat == 'Car': 			metric, thres = 'dist', 10
-			elif cat == 'Pedestrian': 	metric, thres = 'dist', 6 		# add negative due to it is the cost
-			elif cat == 'Bicycle': 		metric, thres = 'dist', 6
-			elif cat == 'Motorcycle':	metric, thres = 'dist', 10
-			elif cat == 'Bus': 			metric, thres = 'dist', 10
-			elif cat == 'Trailer': 		metric, thres = 'dist', 10
-			elif cat == 'Truck': 		metric, thres = 'dist', 10
+			# # original parameters for megvii
+			# if cat == 'Car': 			metric, thres, min_hits, max_age = 'dist', 10, 3, 2
+			# elif cat == 'Pedestrian': 	metric, thres, min_hits, max_age = 'dist',  6, 3, 2	
+			# elif cat == 'Bicycle': 		metric, thres, min_hits, max_age = 'dist',  6, 3, 2
+			# elif cat == 'Motorcycle':	metric, thres, min_hits, max_age = 'dist', 10, 3, 2
+			# elif cat == 'Bus': 			metric, thres, min_hits, max_age = 'dist', 10, 3, 2
+			# elif cat == 'Trailer': 		metric, thres, min_hits, max_age = 'dist', 10, 3, 2
+			# elif cat == 'Truck': 		metric, thres, min_hits, max_age = 'dist', 10, 3, 2
+
 			else: assert False, 'error'
-
-			self.max_age = 2 		# max age will preserve the bbox does not appear no more than 2 frames, interpolate the detection
-			self.min_hits = 1
 
 		else: assert False, 'no such dataset'
 
 		# add negative due to it is the cost
-		if metric == 'dist': thres *= -1	
-
-		self.metric, self.thres = metric, thres
+		if metric in ['dist_3d', 'dist_2d']: thres *= -1	
+		self.algm, self.metric, self.thres, self.max_age, self.min_hits = \
+			algm, metric, thres, max_age, min_hits
 
 		# define max/min values for the output affinity matrix
-		if self.metric == 'dist':  self.max_sim, self.min_sim = 0.0, -100.
-		elif self.metric == 'iou': self.max_sim, self.min_sim = 1.0, 0.0
+		if self.metric in ['dist_3d', 'dist_2d']:   self.max_sim, self.min_sim = 0.0, -100.
+		elif self.metric in ['iou_2d', 'iou_3d']:   self.max_sim, self.min_sim = 1.0, 0.0
+		elif self.metric in ['giou_2d', 'giou_3d']: self.max_sim, self.min_sim = 1.0, -1.0
+
+	def print_param(self):
+		print_log('***************** Parameters')
 
 	def process_dets(self, dets):
 		# convert each detection into the class Box3D 
@@ -178,27 +184,13 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 			ID_tmp = ID_list[count]
 			color_float = colors[int(ID_tmp) % max_color]
 			color_int = tuple([int(tmp * 255) for tmp in color_float])
-			str_vis = '%d' % ID_tmp
+			str_vis = '%d, %f' % (ID_tmp, trk_tmp.o)
 			img = vis_obj(trk_tmp, img, color_int, str_vis)		# blue for tracklets
 			count += 1
 		
 		img = Image.fromarray(img)
 		img = img.resize((hw[1], hw[0]))
 		img.save(save_path)
-
-	def matching(self, dets, trks):
-		# data association
-
-		dets_8corner = [Box3D.box2corners3d_camcoord(det_tmp) for det_tmp in dets]
-		if len(dets_8corner) > 0: dets_8corner = np.stack(dets_8corner, axis=0)
-		else: dets_8corner = []
-		trks_8corner = [Box3D.box2corners3d_camcoord(trk_tmp) for trk_tmp in trks]
-		if len(trks_8corner) > 0: trks_8corner = np.stack(trks_8corner, axis=0)
-		matched, unmatched_dets, unmatched_trks, cost, affi = \
-			associate_detections_to_trackers(dets_8corner, trks_8corner, self.metric, self.thres, 1)
-		print_log(matched, log=self.log, display=False)
-
-		return matched, unmatched_dets, unmatched_trks, cost, affi
 
 	def prediction(self):
 		# get predicted locations from existing tracks
@@ -269,14 +261,16 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 		# create and initialise new trackers for unmatched detections
 
 		# dets = copy.copy(dets)
-		self.new_id_list = list()					# new ID generated for unmatched detections
+		new_id_list = list()					# new ID generated for unmatched detections
 		for i in unmatched_dets:        			# a scalar of index
 			trk = KF(Box3D.bbox2array(dets[i]), info[i, :], self.ID_count[0])
 			self.trackers.append(trk)
-			self.new_id_list.append(trk.id)
+			new_id_list.append(trk.id)
 			# print('track ID %s has been initialized due to new detection' % trk.id)
 
 			self.ID_count[0] += 1
+
+		return new_id_list
 
 	def output(self):
 		# output exiting tracks that have been stably associated, i.e., >= min_hits
@@ -299,16 +293,13 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 
 		return results
 
-	def process_affi(self, affi, matched, unmatched_dets):
+	def process_affi(self, affi, matched, unmatched_dets, new_id_list):
 
 		# post-processing affinity matrix, convert from affinity between raw detection and past total tracklets
 		# to affinity between past "active" tracklets and current active output tracklets, so that we can know 
 		# how certain the results of matching is. The approach is to find the correspondes of ID for each row and
 		# each column, map to the actual ID in the output trks, then purmute/expand the original affinity matrix
 		
-		if affi is None: return None 		# edge case for the first frame with no affinity matrix
-		affi = copy.copy(affi)
-
 		###### determine the ID for each past track
 		trk_id = self.id_past 			# ID in the trks for matching
 
@@ -321,9 +312,9 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 
 		# assign the new birth ID to each unmatched detection
 		count = 0
-		assert len(unmatched_dets) == len(self.new_id_list), 'error'
+		assert len(unmatched_dets) == len(new_id_list), 'error'
 		for unmatch_tmp in unmatched_dets:
-			det_id[unmatch_tmp] = self.new_id_list[count] 	# new_id_list is in the same order as unmatched_dets
+			det_id[unmatch_tmp] = new_id_list[count] 	# new_id_list is in the same order as unmatched_dets
 			count += 1
 		assert not (-1 in det_id), 'error, still have invalid ID in the detection list'
 
@@ -374,7 +365,7 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 
 		return affi
 
-	def track(self, dets_all, frame, seq_name=None):
+	def track(self, dets_all, frame, seq_name):
 		"""
 		Params:
 		  	dets_all: dict
@@ -393,8 +384,7 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 		# if int(frame) > 5: zxc
 
 		# logging
-		print_str = '\n\n*****************************************\n\nprocessing frame %d' % frame
-		if seq_name is not None: print_str += ', seq name %s' % seq_name
+		print_str = '\n\n*****************************************\n\nprocessing seq_name/frame %s/%d' % (seq_name, frame)
 		print_log(print_str, log=self.log, display=False)
 		self.frame_count += 1
 
@@ -419,7 +409,16 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 			self.visualization(img, dets, trks, self.calib, self.hw, save_path)
 
 		# matching
-		matched, unmatched_dets, unmatched_trks, cost, affi = self.matching(dets, trks)
+		matched, unmatched_dets, unmatched_trks, cost, affi = \
+			data_association(dets, trks, self.metric, self.thres, self.algm)
+		# print_log('detections are', log=self.log, display=False)
+		# print_log(dets, log=self.log, display=False)
+		# print_log('tracklets are', log=self.log, display=False)
+		# print_log(trks, log=self.log, display=False)
+		# print_log('matched indexes are', log=self.log, display=False)
+		# print_log(matched, log=self.log, display=False)
+		# print_log('raw affinity matrix is', log=self.log, display=False)
+		# print_log(affi, log=self.log, display=False)
 
 		# update trks with matched detection measurement
 		self.update(matched, unmatched_trks, dets, info)
@@ -433,7 +432,9 @@ class AB3DMOT(object):			  	# A baseline of 3D multi-object tracking
 		else:            	 results = [np.empty((0, 15))]
 		self.id_now_output = results[0][:, 7].tolist()					# only the active tracks that are outputed
 
-		affi = self.process_affi(affi, matched, unmatched_dets)
+		affi = self.process_affi(affi, matched, unmatched_dets, new_id_list)
+		# print_log('processed affinity matrix is', log=self.log, display=False)
+		# print_log(affi, log=self.log, display=False)
 
 		# logging
 		print_log('\ntop-1 cost selected', log=self.log, display=False)
