@@ -2,15 +2,9 @@ scikit-learn==0.19.2
 filterpy==1.4.5
 numba==0.43.1	
 matplotlib==2.2.3
-pillow
-# python 3.6
-# pillow==8.3.2
+pillow==8.3.2
 opencv-python==4.2.0.32
 glob2==0.6
 PyYAML==3.12
 easydict==1.9
-
-# python 3.6
 llvmlite==0.32.1 			
-# python 2.7
-# llvmlite==0.31.0		

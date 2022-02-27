@@ -53,3 +53,8 @@ class KF(Filter):
 
 		# initialize data
 		self.kf.x[:7] = self.initial_pos.reshape((7, 1))
+
+	def compute_innovation_matrix(self):
+		""" compute the innovation matrix for association with mahalanobis distance
+		"""
+		return np.matmul(np.matmul(self.kf.H, self.kf.P), self.kf.H.T) + self.kf.R

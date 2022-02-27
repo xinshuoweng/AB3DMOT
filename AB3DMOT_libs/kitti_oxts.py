@@ -1,6 +1,8 @@
 import numpy as np, json
+from numba import jit
 from xinshuo_io import fileparts
 
+@jit
 def rotx(t):
     """Rotation about the x-axis."""
     c = np.cos(t)
@@ -9,6 +11,7 @@ def rotx(t):
                      [0,  c, -s],
                      [0,  s,  c]])
 
+@jit
 def roty(t):
     """Rotation about the y-axis."""
     c = np.cos(t)
@@ -17,6 +20,7 @@ def roty(t):
                      [0,  1,  0],
                      [-s, 0,  c]])
 
+@jit
 def rotz(t):
     """Rotation about the z-axis."""
     c = np.cos(t)
@@ -25,12 +29,14 @@ def rotz(t):
                      [s,  c,  0],
                      [0,  0,  1]])
 
+@jit
 def transform_from_rot_trans(R, t):
     """Transforation matrix from rotation matrix and translation vector."""
     R = R.reshape(3, 3)
     t = t.reshape(3, 1)
     return np.vstack((np.hstack([R, t]), [0, 0, 0, 1]))
 
+@jit
 def _poses_from_oxts(oxts_packets):
 
     """Helper method to compute SE(3) pose matrices from OXTS packets."""

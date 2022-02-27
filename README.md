@@ -21,7 +21,8 @@ year = {2020}
 }
 ```
 
-<img align="center" width="98%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main.gif">
+<img align="center" width="98%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main1.gif">
+<img align="center" width="98%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main2.gif">
 
 ## Overview
 - [News](#news)
@@ -32,6 +33,7 @@ year = {2020}
 - [Acknowledgement](#acknowledgement)
 
 ## News
+- Feb. 26, 2022: Refactor the code and libraries and signficantly improve performance on KITTI 3D MOT evaluation
 - Aug. 06, 2020: Extended abstract (one oral) accepted at two ECCV workshops: [WiCV](https://sites.google.com/view/wicvworkshop-eccv2020/), [PAD](https://sites.google.com/view/pad2020/accepted-papers?authuser=0)
 - Jul. 05, 2020: 2D MOT results on KITTI for all three categories released
 - Jul. 04, 2020: Code modularized and a minor bug in KITTI evaluation for DontCare objects fixed
@@ -54,14 +56,14 @@ This code requires the following packages:
 5. pillow==6.2.2
 6. opencv-python==4.2.0.32
 7. glob2==0.6
-8. llvmlite==0.32.1 (for python 3.6) or llvmlite==0.31.0 (for python 2.7)
+8. llvmlite==0.32.1
 
-One can either use the system python or create a virtual enviroment (virtualenv for python2, venv for python3) specifically for this project (https://www.pythonforbeginners.com/basics/how-to-use-python-virtualenv). To install required dependencies on the system python, please run the following command at the root of this code:
+One can either use the system python or create a virtual enviroment (venv for python3) specifically for this project (https://www.pythonforbeginners.com/basics/how-to-use-python-virtualenv). To install required dependencies on the system python, please run the following command at the root of this code:
 ```
 $ cd path/to/AB3DMOT
 $ pip3 install -r requirements.txt
 ```
-To install required dependencies on the virtual environment of the python (e.g., virtualenv for python2), please run the following command at the root of this code:
+To install required dependencies on the virtual environment of the python, please run the following command at the root of this code:
 ```
 $ pip3 install venv
 $ python3 -m venv env
@@ -98,85 +100,100 @@ Frame | Type   | 2D BBOX (x1, y1, x2, y2)       | Score | 3D BBOX (h, w, l, x, y
 ## 3D Multi-Object Tracking
 
 ### Inference
-To run our tracker on the KITTI MOT validation set with the provided detection:
+To run our tracker on the KITTI/nuScenes MOT validation set with the provided detection:
 
 ```
-$ python3 main.py pointrcnn_Car_val
-$ python3 main.py pointrcnn_Pedestrian_val
-$ python3 main.py pointrcnn_Cyclist_val
+$ python3 main.py --cfg KITTI
+$ python3 main.py --cfg nuScenes
 ```
-To run our tracker on the KITTI MOT test set with the provided detection:
+To run our tracker on the test set with the provided detection, one can change the "split" entry in the config file from "val" to "test" and then run the same above command, or simply run
+```
+$ python3 main.py --cfg KITTI --split test
+$ python3 main.py --cfg nuScenes --split test
+```
+Then, the results will be saved to the "./results/KITTI" or "./results/nuScenes" folder. 
 
-```
-$ python3 main.py pointrcnn_Car_test
-$ python3 main.py pointrcnn_Pedestrian_test
-$ python3 main.py pointrcnn_Cyclist_test
-```
-Then, the results will be saved to "./results" folder. In detail, results in "./results/data" folder are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). On the other hand, results in "./results/trk_withid" folder are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID in the last column.
-
-Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
+In detail, running above command will generate a folder named "detname_split_H1" that includes results combined from all categories, and also folders named "detname_category_split_H1" representing results for each category. Under each result folder, the "./data_0" subfolders are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). Also, the "./trk_withid_0" subfolders are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID in the last column.
 
 ### 3D MOT Evaluation on KITTI MOT Validation Set
 
-To reproduce the quantitative **3D MOT** results of our 3D MOT system on KITTI MOT **validation** set, please run:
-  ```
-  $ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val
-  $ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val
-  $ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_val
-  ```
-Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. The overall performance is the performance averaged over three categoeries for sAMOTA, AMOTA, AMOTP, MOTA, MOTP and the summed over three categories for IDS, FRAG, FP, FN.
+To reproduce the quantitative **3D MOT** results of our 3D MOT system on the KITTI MOT **validation** set with a threshold of 0.25 3D IoU during evaluation, please run:
+```
+$ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_val_H1 1 3D 0.25
+```
+Or you can use the threshold of 0.5 3D IoU during evaluation:
+```
+$ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_val_H1 1 3D 0.5
+```
+
+Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. The overall performance is the performance averaged over three categoeries for sAMOTA, AMOTA, AMOTP, MOTA, MOTP and the summed over three categories for IDS, FRAG, FP, FN. Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
+
+#### Results with PointRCNN
+
+Results evaluated with the 0.25 3D IoU threshold:
 
  Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
 --------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  93.28     | 45.43     | 77.41     | 86.24    |  78.43  |  0  | 15   | 365 | 708  | 207.4
- *Pedestrian*   |  74.39     | 29.77     | 53.90     | 69.50    |  67.77  |  1  | 74   | 276 | 2708 | 470.1
- *Cyclist*      |  72.94     | 37.95     | 63.03     | 79.82    |  76.55  |  0  | 4    | 55  | 217  | 1241.6
- *Overall*      |  80.20     | 37.72     | 64.78     | 78.52    |  74.25  |  1  | 93   | 696 | 3713 | -
+ *Car*          |  93.34     | 45.51     | 78.49     | 86.47    |  79.40  |  0  | 15   | 368  | 766  | 108.7
+ *Pedestrian*   |  82.73     | 34.72     | 62.54     | 73.86    |  67.58  |  4  | 62   | 589  | 1965 | 119.2
+ *Cyclist*      |  93.78     | 47.88     | 81.97     | 84.79    |  77.23  |  1  | 3    | 114  | 90   | 980.7
+ *Overall*      |  89.62     | 42.70     | 74.33     | 81.71    |  74.74  |  5  | 80   | 1071 | 2821 | -
  
+Results evaluated with the 0.5 3D IoU threshold:
+
+ Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
+--------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
+ *Car*          |  92.57     | 44.85     | 78.69     | 84.81    |  79.82  |  0  | 49   | 456  | 817  | 108.7
+ *Pedestrian*   |  77.68     | 31.50     | 59.58     | 68.19    |  68.55  |  2  | 132  | 888  | 2223 | 119.2
+ *Cyclist*      |  92.05     | 46.17     | 82.21     | 83.38    |  77.52  |  1  | 5    | 124  | 99   | 980.7
+ *Overall*      |  87.43     | 40.84     | 73.49     | 78.79    |  75.30  |  3  | 186  | 1468 | 3139 | -
+
+Results evaluated with the 0.7 3D IoU threshold:
+
+ Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
+--------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
+ *Car*          |  74.96     | 30.60     | 69.58     | 62.48    |  82.64  |  0  | 173   | 1065 | 2079  | 108.7
+
+Note that the results are slightly higher than our original IROS 2020 paper due to some improvements we made in the code. We will describe those in a follow up report very soon.
+
 ### 2D MOT Evaluation on KITTI MOT Validation Set
 
 To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI MOT **validation** set, please run:
-  ```
-  $ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val 2D
-  $ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_Pedestrian_val 2D
-  $ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_Cyclist_val 2D
-  ```
+```
+$ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_val_H1 1 2D 0.5
+```
+
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. 
 
  Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
 --------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  93.01     | 45.21     | 84.61     | 85.70    |  86.99  |  2  | 24   | 391  | 805  | 207.4
- *Pedestrian*   |  65.89     | 24.29     | 49.15     | 59.76    |  67.27  |  52 | 371  | 683  | 3203 | 470.1
- *Cyclist*      |  72.09     | 37.65     | 67.47     | 78.78    |  85.40  |  0  | 8    | 64   | 222  | 1241.6
- *Overall*      |  77.00     | 35.72     | 67.08     | 74.75    |  79.89  |  54 | 403  | 1138 | 4230 | -
+ *Car*          |  93.08     | 45.30     | 84.58     | 85.98    |  86.95  |   2 | 25   | 394  | 779  | 108.7
+ *Pedestrian*   |  69.70     | 24.38     | 55.77     | 60.41    |  67.18  | 119 | 477  | 1075 | 2681 | 119.2
+ *Cyclist*      |  91.62     | 45.92     | 87.51     | 83.01    |  85.55  |   0 | 7    | 130  | 99   | 980.7
+ *Overall*      |  84.80     | 38.53     | 75.95     | 76.47    |  79.89  | 121 | 509  | 1599 | 3559 | -
   
 ### 2D MOT Evaluation on KITTI MOT Test Set
 
 To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI MOT **test set**, please run the following: 
 ```
-  $ python3 trk_conf_threshold.py pointrcnn_Car_test
-  $ python3 trk_conf_threshold.py pointrcnn_Pedestrian_test
-  $ python3 trk_conf_threshold.py pointrcnn_Cyclist_test
-  $ python3 combine_trk_cat.py
-  ```
+$ python3 KITTI_trk_conf_threshold.py --result_sha pointrcnn_Car_test_H1
+$ python3 KITTI_trk_conf_threshold.py --result_sha pointrcnn_Pedestrian_test_H1
+$ python3 KITTI_trk_conf_threshold.py --result_sha pointrcnn_Cyclist_test_H1
+$ python3 combine_trk_cat.py --dataset KITTI --split test --suffix H1_thres
+```
 Then, compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation. Note that KITTI does not release the ground truth labels to users, so we have to use the official KITTI 2D MOT evaluation server for evaluation, which does not include our new metrics.
-  ```
-  $ ./results/pointrcnn_test_thres/data
-  ```
-The results should be similar to our entry shown below on the KITTI 2D MOT leaderboard. Note that we only have results for Car and Pedestrian because KITTI 2D MOT benchmark only supports to evaluate these two categories, not including the Cyclist. 
-
- Category       | MOTA (%) | MOTP (%)| MT (%) | ML (%) | IDS | FRAG |  FP  |   FN  | FPS 
---------------- |:--------:|:-------:|:------:|:------:|:---:|:----:|:----:|:-----:|:---:
- *Car*          | 83.84    |  85.24  | 66.92  | 11.38  |  9  | 224  | 1059 | 4491  | 214.7
- *Pedestrian*   | 39.63    |  64.87  | 16.84  | 41.58  | 170 | 940  | 2098 | 11707 | 351.8
+```
+$ ./results/KITTI/pointrcnn_test_H1_thres/data_0
+```
+The results should be similar to our entry on the KITTI 2D MOT leaderboard (http://www.cvlibs.net/datasets/kitti/eval_tracking.php). 
 
 ### Visualization
 
 To visualize the qualitative results of our 3D MOT system on images shown in the paper (Note that the opencv3 is required by this step, please check the opencv version if there is an error):
   ```
-  $ python3 visualization.py pointrcnn_Car_test_thres
+  $ python3 visualization.py --result_sha pointrcnn_test_H1_thres --split test
   ```
-Visualization results are then saved to "./results/pointrcnn_test_thres/trk_image_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
+Visualization results are then saved to "./results/KITTI/pointrcnn_test_H1_thres/trk_image_vis" and "./results/KITTI/pointrcnn_test_H1_thres/trk_video_vis". If one wants to visualize the results on the entire sequences, please download the KITTI MOT dataset http://www.cvlibs.net/datasets/kitti/eval_tracking.php and move the image_02 (we have already prepared the calib data for you) data to the "./data/KITTI/resources" folder.
  
 ### Acknowledgement
 The idea of this method is inspired by "[SORT](https://github.com/abewley/sort)"

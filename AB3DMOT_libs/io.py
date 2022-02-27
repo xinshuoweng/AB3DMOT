@@ -2,7 +2,7 @@
 # email: xinshuo.weng@gmail.com
 
 import warnings, numpy as np, os
-from xinshuo_io import mkdir_if_missing
+from xinshuo_io import mkdir_if_missing, load_txt_file, save_txt_file
 
 def load_detection(file):
 
@@ -86,3 +86,19 @@ def save_affinity(affi_data, save_path):
 	# save
 	fmt = '%%%d.%df' % (num_digit, decimals)
 	np.savetxt(save_path, affi_data, fmt=fmt, delimiter=', ')
+
+def combine_files(file_list, save_path, sort=True):
+	# combine txt files and sort them in frame order, used to collect results from 
+	# different class categories
+
+	# collect all files
+	data_all = list()
+	for file_tmp in file_list:
+		data, num_lines = load_txt_file(file_tmp)
+		data_all += data
+
+	# sort based on frame number
+	if sort:
+		data_all.sort(key = lambda x: int(x.split(' ')[0]))
+
+	save_txt_file(data_all, save_path)

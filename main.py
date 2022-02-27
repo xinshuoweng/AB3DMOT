@@ -6,12 +6,14 @@ import matplotlib; matplotlib.use('Agg')
 import os, numpy as np, time, sys, argparse
 from AB3DMOT_libs.utils import Config, get_subfolder_seq, initialize
 from AB3DMOT_libs.io import load_detection, get_saving_dir, get_frame_det, save_results, save_affinity
+from combine_trk_cat import combine_trk_cat
 from xinshuo_io import mkdir_if_missing, save_txt_file
 from xinshuo_miscellaneous import get_timestring, print_log
 
 def parse_args():
     parser = argparse.ArgumentParser(description='AB3DMOT')
-    parser.add_argument('--cfg', type=str, default='nuScenes', help='name of the detection folder')
+    parser.add_argument('--dataset', type=str, default='nuScenes', help='KITTI, nuScenes')
+    parser.add_argument('--split', type=str, default='', help='train, val, test')
     args = parser.parse_args()
     return args
 
@@ -94,17 +96,23 @@ def main_per_cat(cfg, cat, log, ID_start):
 			eval_file_dict[index].close()
 			ID_start = max(ID_start, tracker.ID_count[index])
 
-	print('%s, %25s: %4.f seconds for %5d frames or %6.1f FPS, metric is %s = %.2f' % \
+	print_log('%s, %25s: %4.f seconds for %5d frames or %6.1f FPS, metric is %s = %.2f' % \
 		(cfg.dataset, result_sha, total_time, total_frames, total_frames / total_time, \
-		tracker.metric, tracker.thres))
+		tracker.metric, tracker.thres), log=log)
 	
 	return ID_start
 
 def main(args):
 
 	# load config files
-	config_path = './configs/%s.yml' % args.cfg
+	config_path = './configs/%s.yml' % args.dataset
 	cfg, settings_show = Config(config_path)
+
+	# overwrite data split
+	if args.split is not '':
+		cfg.split = args.split
+
+	# print configs
 	time_str = get_timestring()
 	log = os.path.join(cfg.save_root, 'log/log_%s_%s_%s.txt' % (time_str, cfg.dataset, cfg.split))
 	mkdir_if_missing(log); log = open(log, 'w')
@@ -119,6 +127,11 @@ def main(args):
 	# run tracking for each category
 	for cat in cfg.cat_list:
 		ID_start = main_per_cat(cfg, cat, log, ID_start)
+
+	# combine results for every category
+	print_log('\ncombining results......', log=log)
+	combine_trk_cat(cfg.split, cfg.dataset, cfg.det_method, 'H%d' % cfg.hypothesis, cfg.hypothesis)
+	print_log('\nDone!', log=log)
 	log.close()
 
 if __name__ == '__main__':

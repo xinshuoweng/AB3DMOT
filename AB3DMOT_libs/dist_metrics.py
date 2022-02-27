@@ -1,7 +1,6 @@
-import numpy as np
+import numpy as np, time
 from numba import jit
 from scipy.spatial import ConvexHull
-from shapely.geometry import Polygon
 from AB3DMOT_libs.box import Box3D
 
 def polygon_clip(subjectPolygon, clipPolygon):
@@ -48,7 +47,6 @@ def polygon_clip(subjectPolygon, clipPolygon):
 		if len(outputList) == 0: return None
 	return (outputList)
 
-@jit          
 def convex_hull_intersection(p1, p2):
 	""" Compute area of two convex hull's intersection area.
 		p1,p2 are a list of (x,y) tuples of hull vertices.
@@ -61,27 +59,60 @@ def convex_hull_intersection(p1, p2):
 	else:
 		return None, 0.0  
 
+def compute_inter_2D(boxa_bottom, boxb_bottom):
+	# computer intersection over union of two sets of bottom corner points
+
+	_, I_2D = convex_hull_intersection(boxa_bottom, boxb_bottom)
+
+	return I_2D
+
+def compute_height(box_a, box_b, inter=True):
+
+	corners1 = Box3D.box2corners3d_camcoord(box_a) 	# 8 x 3
+	corners2 = Box3D.box2corners3d_camcoord(box_b)	# 8 x 3
+	
+	if inter: 		# compute overlap height
+		ymax = min(corners1[0, 1], corners2[0, 1])
+		ymin = max(corners1[4, 1], corners2[4, 1])
+		height = max(0.0, ymax - ymin)
+	else:			# compute union height
+		ymax = max(corners1[0, 1], corners2[0, 1])
+		ymin = min(corners1[4, 1], corners2[4, 1])
+		height = max(0.0, ymax - ymin)
+
+	return height
+
+def compute_bottom(box_a, box_b):
+	# obtain ground corners and area, not containing the height
+
+	corners1 = Box3D.box2corners3d_camcoord(box_a) 	# 8 x 3
+	corners2 = Box3D.box2corners3d_camcoord(box_b)	# 8 x 3
+	
+	# get bottom corners and inverse order so that they are in the 
+	# counter-clockwise order to fulfill polygon_clip
+	boxa_bot = corners1[-5::-1, [0, 2]] 		# 4 x 2
+	boxb_bot = corners2[-5::-1, [0, 2]]			# 4 x 2
+		
+	return boxa_bot, boxb_bot
+
 def PolyArea2D(pts):
     roll_pts = np.roll(pts, -1, axis=0)
     area = np.abs(np.sum((pts[:, 0] * roll_pts[:, 1] - pts[:, 1] * roll_pts[:, 0]))) * 0.5
     return area
 
-@jit          
-def poly_area(x,y):
-	""" Ref: http://stackoverflow.com/questions/24467972/calculate-area-of-polygon-given-x-y-coordinates """
-	return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
+def convex_area(boxa_bottom, boxb_bottom):
 
-@jit         
-def box3d_vol(corners):
-	''' corners: (8,3) no assumption on axis direction '''
-	a = np.sqrt(np.sum((corners[0,:] - corners[1,:])**2))
-	b = np.sqrt(np.sum((corners[1,:] - corners[2,:])**2))
-	c = np.sqrt(np.sum((corners[0,:] - corners[4,:])**2))
-	return a*b*c
+	# compute the convex area
+	all_corners = np.vstack((boxa_bottom, boxb_bottom))
+	C = ConvexHull(all_corners)
+	convex_corners = all_corners[C.vertices]
+	convex_area = PolyArea2D(convex_corners)
+
+	return convex_area
 
 #################### distance metric
 
-def iou(bbox1, bbox2, space='3D'):
+def iou(box_a, box_b, metric='giou_3d'):
 	''' Compute 3D/2D bounding box IoU, only working for object parallel to ground
 
 	Input:
@@ -101,96 +132,33 @@ def iou(bbox1, bbox2, space='3D'):
 	
 	rect/ref camera coord:
     right x, down y, front z
-	'''
+	'''	
 
-	corners1 = Box3D.box2corners3d_camcoord(bbox1)
-	corners2 = Box3D.box2corners3d_camcoord(bbox2)
+	# compute 2D related measures
+	boxa_bot, boxb_bot = compute_bottom(box_a, box_b)
+	I_2D = compute_inter_2D(boxa_bot, boxb_bot)
 
-	# corner points are in counter clockwise order, also only take x and z
-	# because y is the negative height direction
-	rect1 = [(corners1[i,0], corners1[i,2]) for i in range(3,-1,-1)] 		
-	rect2 = [(corners2[i,0], corners2[i,2]) for i in range(3,-1,-1)] 
-	area1 = poly_area(np.array(rect1)[:,0], np.array(rect1)[:,1])
-	area2 = poly_area(np.array(rect2)[:,0], np.array(rect2)[:,1])
+	# only needed for GIoU
+	if 'giou' in metric:
+		C_2D = convex_area(boxa_bot, boxb_bot)
 
-	# inter_area = shapely_polygon_intersection(rect1, rect2)
-	_, inter_area = convex_hull_intersection(rect1, rect2)
-
-	# try:
-	#   _, inter_area = convex_hull_intersection(rect1, rect2)
-	# except ValueError:
-	#   inter_area = 0
-	# except scipy.spatial.qhull.QhullError:
-	#   inter_area = 0
-
-	iou_2d = inter_area/(area1+area2-inter_area)
-	if space == '2D':
-		return iou_2d
-	elif space == '3D':
-		ymax = min(corners1[0, 1], corners2[0, 1])
-		ymin = max(corners1[4, 1], corners2[4, 1])
-		inter_vol = inter_area * max(0.0, ymax - ymin)
-		vol1 = box3d_vol(corners1)
-		vol2 = box3d_vol(corners2)
-		iou_3d = inter_vol / (vol1 + vol2 - inter_vol)
-		return iou_3d
+	if '2d' in metric:		 	# return 2D IoU/GIoU
+		U_2D = box_a.w * box_a.l + box_b.w * box_b.l - I_2D
+		if metric == 'iou_2d':  return I_2D / U_2D
+		if metric == 'giou_2d': return I_2D / U_2D - (C_2D - U_2D) / C_2D
+	
+	elif '3d' in metric:		# return 3D IoU/GIoU
+		overlap_height = compute_height(box_a, box_b)
+		I_3D = I_2D * overlap_height	
+		U_3D = box_a.w * box_a.l * box_a.h + box_b.w * box_b.l * box_b.h - I_3D
+		if metric == 'iou_3d':  return I_3D / U_3D
+		if metric == 'giou_3d':
+			union_height = compute_height(box_a, box_b, inter=False)
+			C_3D = C_2D * union_height
+			return I_3D / U_3D - (C_3D - U_3D) / C_3D
 	else:
 		assert False, '%s is not supported' % space
 
-def giou2d(box_a, box_b):
-
-	# obtain ground corners and area, not containing the height
-	corners1 = Box3D.box2corners3d_camcoord(box_a) 	# 8 x 3
-	corners2 = Box3D.box2corners3d_camcoord(box_b)	# 8 x 3
-	boxa_bot = corners1[:4, [0, 2]] 		# 4 x 2
-	boxb_bot = corners2[:4, [0, 2]]			# 4 x 2
-	reca, recb = Polygon(boxa_bot), Polygon(boxb_bot)
-
-	# compute intersection and union
-	I = reca.intersection(recb).area
-	U = box_a.w * box_a.l + box_b.w * box_b.l - I
-
-	# compute the convex area
-	all_corners = np.vstack((boxa_bot, boxb_bot))
-	C = ConvexHull(all_corners)
-	convex_corners = all_corners[C.vertices]
-	convex_area = PolyArea2D(convex_corners)
-	C = convex_area
-
-	return I / U - (C - U) / C
-
-def giou3d(box_a, box_b):
-
-	# obtain ground corners and area, not containing the height
-	corners1 = Box3D.box2corners3d_camcoord(box_a) 	# 8 x 3
-	corners2 = Box3D.box2corners3d_camcoord(box_b)	# 8 x 3
-	boxa_bot = corners1[:4, [0, 2]] 		# 4 x 2
-	boxb_bot = corners2[:4, [0, 2]]			# 4 x 2
-	reca, recb = Polygon(boxa_bot), Polygon(boxb_bot)
-
-	# compute overlap height
-	ymax = min(corners1[0, 1], corners2[0, 1])
-	ymin = max(corners1[4, 1], corners2[4, 1])
-	overlap_height = max(0.0, ymax - ymin)
-
-	# compute IoU
-	I = reca.intersection(recb).area * overlap_height
-	U = box_a.w * box_a.l * box_a.h + box_b.w * box_b.l * box_b.h - I
-
-	# compute the union height
-	ymax = max(corners1[0, 1], corners2[0, 1])
-	ymin = min(corners1[4, 1], corners2[4, 1])
-	union_height = max(0.0, ymax - ymin)
-
-	# compute the convex area
-	all_corners = np.vstack((boxa_bot, boxb_bot))
-	C = ConvexHull(all_corners)
-	convex_corners = all_corners[C.vertices]
-	convex_area = PolyArea2D(convex_corners)
-	C = convex_area * union_height
-
-	return I / U - (C - U) / C
-	
 def dist_ground(bbox1, bbox2):
 	# Compute distance of bottom center in 3D space, NOT considering the difference in height
 
@@ -233,35 +201,18 @@ def diff_orientation_correction(diff):
     return diff
 
 def m_distance(det, trk, trk_inv_innovation_matrix=None):
-    det_array = Box3D.bbox2array(det)[:7]
-    trk_array = Box3D.bbox2array(trk)[:7]
     
-    diff = np.expand_dims(det_array - trk_array, axis=1)
+	# compute difference
+    det_array = Box3D.bbox2array(det)[:7]
+    trk_array = Box3D.bbox2array(trk)[:7] 		# (7, )
+    diff = np.expand_dims(det_array - trk_array, axis=1) 	# 7 x 1
+
+    # correct orientation
     corrected_yaw_diff = diff_orientation_correction(diff[3])
     diff[3] = corrected_yaw_diff
 
     if trk_inv_innovation_matrix is not None:
-        result = \
-            np.sqrt(np.matmul(np.matmul(diff.T, trk_inv_innovation_matrix), diff)[0][0])
+        dist = np.sqrt(np.matmul(np.matmul(diff.T, trk_inv_innovation_matrix), diff)[0][0])
     else:
-        result = np.sqrt(np.dot(diff.T, diff))
-    return result
-
-def compute_m_distance(dets, tracks, trk_innovation_matrix):
-    """ compute l2 or mahalanobis distance
-        when the input trk_innovation_matrix is None, compute L2 distance (euler)
-        else compute mahalanobis distance
-        return dist_matrix: numpy array [len(dets), len(tracks)]
-    """
-    euler_dis = (trk_innovation_matrix is None) # is use euler distance
-    if not euler_dis:
-        trk_inv_inn_matrices = [np.linalg.inv(m) for m in trk_innovation_matrix]
-    dist_matrix = np.empty((len(dets), len(tracks)))
-
-    for i, det in enumerate(dets):
-        for j, trk in enumerate(tracks):
-            if euler_dis:
-                dist_matrix[i, j] = utils.m_distance(det, trk)
-            else:
-                dist_matrix[i, j] = utils.m_distance(det, trk, trk_inv_inn_matrices[j])
-    return dist_matrix
+        dist = np.sqrt(np.dot(diff.T, diff)) 		# distance along 7 dimension
+    return dist

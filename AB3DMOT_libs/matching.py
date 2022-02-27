@@ -1,6 +1,25 @@
 import numpy as np
+from numba import jit
 from scipy.optimize import linear_sum_assignment
-from AB3DMOT_libs.dist_metrics import iou, dist3d, dist_ground, giou3d, giou2d
+from AB3DMOT_libs.dist_metrics import iou, dist3d, dist_ground, m_distance
+
+def compute_affinity(dets, trks, metric, trk_inv_inn_matrices=None):
+	# compute affinity matrix
+
+	aff_matrix = np.zeros((len(dets), len(trks)), dtype=np.float32)
+	for d, det in enumerate(dets):
+		for t, trk in enumerate(trks):
+
+			# choose to use different distance metrics
+			if 'iou' in metric:    	  dist_now = iou(det, trk, metric)            
+			elif metric == 'm_dis':   dist_now = -m_distance(det, trk, trk_inv_inn_matrices[t])
+			elif metric == 'euler':   dist_now = -m_distance(det, trk, None)
+			elif metric == 'dist_2d': dist_now = -dist_ground(det, trk)              	
+			elif metric == 'dist_3d': dist_now = -dist3d(det, trk)              				
+			else: assert False, 'error'
+			aff_matrix[d, t] = dist_now
+
+	return aff_matrix
 
 def greedy_matching(cost_matrix):
     # association in the greedy manner
@@ -47,21 +66,15 @@ def data_association(dets, trks, metric, threshold, algm='greedy', \
 	if len(dets) == 0: 
 		return np.empty((0, 2), dtype=int), [], np.arange(len(trks)), 0, aff_matrix		
 	
-	# assign values into the affinity matrix
-	for d, det in enumerate(dets):
-		for t, trk in enumerate(trks):
+	# prepare inverse innovation matrix for m_dis
+	if metric == 'm_dis':
+		assert trk_innovation_matrix is not None, 'error'
+		trk_inv_inn_matrices = [np.linalg.inv(m) for m in trk_innovation_matrix]
+	else:
+		trk_inv_inn_matrices = None
 
-			# choose to use different distance metrics
-			if metric == 'iou_3d':    dist_now = iou(det, trk, space='3D')            
-			elif metric == 'iou_2d':  dist_now = iou(det, trk, space='2D')            			
-			elif metric == 'giou_2d': dist_now = giou2d(det, trk)
-			elif metric == 'giou_3d': dist_now = giou3d(det, trk)
-			elif metric == 'm_dis':   dist_now = compute_m_distance(det, trk, trk_innovation_matrix)
-			elif metric == 'euler':   dist_now = compute_m_distance(det, trk, None)
-			elif metric == 'dist_2d': dist_now = -dist_ground(det, trk)              	
-			elif metric == 'dist_3d': dist_now = -dist3d(det, trk)              				
-			else: assert False, 'error'
-			aff_matrix[d, t] = dist_now
+	# compute affinity matrix
+	aff_matrix = compute_affinity(dets, trks, metric, trk_inv_inn_matrices)
 
 	# association based on the affinity matrix
 	if hypothesis == 1:

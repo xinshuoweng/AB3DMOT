@@ -5,29 +5,39 @@ import numpy as np, os, copy, math
 from AB3DMOT_libs.box import Box3D
 from AB3DMOT_libs.matching import data_association
 from AB3DMOT_libs.kalman_filter import KF
+from AB3DMOT_libs.vis import vis_obj
 from xinshuo_miscellaneous import print_log
 from xinshuo_io import mkdir_if_missing
 
 np.set_printoptions(suppress=True, precision=3)
 
-# A baseline of 3D multi-object tracking
+# A Baseline of 3D Multi-Object Tracking
 class AB3DMOT(object):			  	
 	def __init__(self, cfg, cat, calib=None, oxts=None, img_dir=None, vis_dir=None, hw=None, log=None, ID_init=0):                    
-		self.get_param(cfg, cat)
-		self.trackers = []
-		self.frame_count = 0
-		self.ID_count = [ID_init]
-		self.ego_com = cfg.ego_com
-		self.id_now_output = []
 
 		# vis and log purposes
-		self.calib = calib
-		self.oxts = oxts
 		self.img_dir = img_dir
 		self.vis_dir = vis_dir
 		self.vis = cfg.vis
 		self.hw = hw
 		self.log = log
+
+		# counter
+		self.trackers = []
+		self.frame_count = 0
+		self.ID_count = [ID_init]
+		self.id_now_output = []
+
+		# config
+		self.cat = cat
+		self.ego_com = cfg.ego_com 			# ego motion compensation
+		self.calib = calib
+		self.oxts = oxts
+		self.affi_process = cfg.affi_pro	# post-processing affinity
+		self.get_param(cfg, cat)
+		self.print_param()
+
+		# debug
 		# self.debug_id = 2
 		self.debug_id = None
 
@@ -36,33 +46,42 @@ class AB3DMOT(object):
 
 		if cfg.dataset == 'KITTI':
 
+			# # tuned for PV-RCNN detections
+			# if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'giou_3d', -0.2, 3, 2
+			# elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 4 		
+			# elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
+
 			# tuned for PointRCNN detections
 			if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'giou_3d', -0.2, 3, 2
 			elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 4 		
 			elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
 
-			# # tuned for PointRCNN detections
-			# if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'iou_3d', 0.01, 3, 2
-			# elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',   1, 1, 4 		
-			# elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d',   2, 3, 4
-
 			# # original parameters
-			# if cat == 'Car': 			metric, thres, min_hits, max_age = 'dist', 6, 3, 2
-			# elif cat == 'Pedestrian': 	metric, thres, min_hits, max_age = 'dist', 1, 3, 2		
-			# elif cat == 'Cyclist': 		metric, thres, min_hits, max_age = 'dist', 6, 3, 2
-			else: assert False, 'error'
+			# if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 6, 3, 2
+			# elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 1, 3, 2		
+			# elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 6, 3, 2
+			# else: assert False, 'error'
 
 		elif cfg.dataset == 'nuScenes':
 
+			# # tuned for Megvii detections
+			# if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 1, 2
+			# elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 1, 1, 2
+			# elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 4, 1, 2
+			# elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 3, 2
+			# elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 1, 2
+			# elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 3, 2
+			# elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 2, 3, 2
+			
 			# tuned for Megvii detections
-			if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 1, 2
-			elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d',  6, 1, 2
-			elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d',  6, 3, 2
-			elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 3, 2
-			elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 1, 2
-			elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 3, 2
-			elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 10, 1, 2
-
+			if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
+			elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',    2, 1, 2
+			elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 1, 2
+			elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 3, 2
+			elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 1, 2
+			elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.8, 3, 2
+			elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.6, 3, 2
+			
 			# # original parameters for megvii
 			# if cat == 'Car': 			metric, thres, min_hits, max_age = 'dist', 10, 3, 2
 			# elif cat == 'Pedestrian': 	metric, thres, min_hits, max_age = 'dist',  6, 3, 2	
@@ -77,17 +96,23 @@ class AB3DMOT(object):
 		else: assert False, 'no such dataset'
 
 		# add negative due to it is the cost
-		if metric in ['dist_3d', 'dist_2d']: thres *= -1	
+		if metric in ['dist_3d', 'dist_2d', 'm_dis']: thres *= -1	
 		self.algm, self.metric, self.thres, self.max_age, self.min_hits = \
 			algm, metric, thres, max_age, min_hits
 
 		# define max/min values for the output affinity matrix
-		if self.metric in ['dist_3d', 'dist_2d']:   self.max_sim, self.min_sim = 0.0, -100.
-		elif self.metric in ['iou_2d', 'iou_3d']:   self.max_sim, self.min_sim = 1.0, 0.0
-		elif self.metric in ['giou_2d', 'giou_3d']: self.max_sim, self.min_sim = 1.0, -1.0
+		if self.metric in ['dist_3d', 'dist_2d', 'm_dis']: self.max_sim, self.min_sim = 0.0, -100.
+		elif self.metric in ['iou_2d', 'iou_3d']:   	   self.max_sim, self.min_sim = 1.0, 0.0
+		elif self.metric in ['giou_2d', 'giou_3d']: 	   self.max_sim, self.min_sim = 1.0, -1.0
 
 	def print_param(self):
-		print_log('***************** Parameters')
+		print_log('\n\n***************** Parameters for %s *********************' % self.cat, log=self.log, display=False)
+		print_log('matching algorithm is %s' % self.algm, log=self.log, display=False)
+		print_log('distance metric is %s' % self.metric, log=self.log, display=False)
+		print_log('distance threshold is %f' % self.thres, log=self.log, display=False)
+		print_log('min hits is %f' % self.min_hits, log=self.log, display=False)
+		print_log('max age is %f' % self.max_age, log=self.log, display=False)
+		print_log('ego motion compensation is %d' % self.ego_com, log=self.log, display=False)
 
 	def process_dets(self, dets):
 		# convert each detection into the class Box3D 
@@ -160,22 +185,9 @@ class AB3DMOT(object):
 		max_color = 20
 		colors = random_colors(max_color)       # Generate random colors
 
-		def vis_obj(obj, img, color_tmp=None, str_vis=None):
-			depth = obj.z
-			if depth >= 2: 			# check in front of camera
-				obj_8corner = Box3D.box2corners3d_camcoord(obj)
-				obj_pts_2d = calib.project_rect_to_image(obj_8corner)
-				img, draw = draw_box3d_image(img, obj_pts_2d, hw, color=color_tmp)
-
-				# draw text
-				if draw and str_vis is not None:
-					x1, y1 = int(obj_pts_2d[4, 0]), int(obj_pts_2d[4, 1])
-					cv2.putText(img, str_vis, (x1+5, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color_tmp, 2)
-			return img
-
 		# visualize all detections as yellow boxes
 		for det_tmp in dets: 
-			img = vis_obj(det_tmp, img, (255, 255, 0))				# yellow for detection
+			img = vis_obj(det_tmp, img, calib, hw, (255, 255, 0))				# yellow for detection
 		
 		# visualize color-specific tracks
 		count = 0
@@ -185,11 +197,11 @@ class AB3DMOT(object):
 			color_float = colors[int(ID_tmp) % max_color]
 			color_int = tuple([int(tmp * 255) for tmp in color_float])
 			str_vis = '%d, %f' % (ID_tmp, trk_tmp.o)
-			img = vis_obj(trk_tmp, img, color_int, str_vis)		# blue for tracklets
+			img = vis_obj(trk_tmp, img, calib, hw, color_int, str_vis)		# blue for tracklets
 			count += 1
 		
 		img = Image.fromarray(img)
-		img = img.resize((hw[1], hw[0]))
+		img = img.resize((hw['image'][1], hw['image'][0]))
 		img.save(save_path)
 
 	def prediction(self):
@@ -409,8 +421,11 @@ class AB3DMOT(object):
 			self.visualization(img, dets, trks, self.calib, self.hw, save_path)
 
 		# matching
+		trk_innovation_matrix = None
+		if self.metric == 'm_dis':
+			trk_innovation_matrix = [trk.compute_innovation_matrix() for trk in self.trackers] 
 		matched, unmatched_dets, unmatched_trks, cost, affi = \
-			data_association(dets, trks, self.metric, self.thres, self.algm)
+			data_association(dets, trks, self.metric, self.thres, self.algm, trk_innovation_matrix)
 		# print_log('detections are', log=self.log, display=False)
 		# print_log(dets, log=self.log, display=False)
 		# print_log('tracklets are', log=self.log, display=False)
@@ -432,9 +447,11 @@ class AB3DMOT(object):
 		else:            	 results = [np.empty((0, 15))]
 		self.id_now_output = results[0][:, 7].tolist()					# only the active tracks that are outputed
 
-		affi = self.process_affi(affi, matched, unmatched_dets, new_id_list)
-		# print_log('processed affinity matrix is', log=self.log, display=False)
-		# print_log(affi, log=self.log, display=False)
+		# post-processing affinity to convert to the affinity between resulting tracklets
+		if self.affi_process:
+			affi = self.process_affi(affi, matched, unmatched_dets, new_id_list)
+			# print_log('processed affinity matrix is', log=self.log, display=False)
+			# print_log(affi, log=self.log, display=False)
 
 		# logging
 		print_log('\ntop-1 cost selected', log=self.log, display=False)
