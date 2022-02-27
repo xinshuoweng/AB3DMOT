@@ -33,7 +33,7 @@ year = {2020}
 - [Acknowledgement](#acknowledgement)
 
 ## News
-- Feb. 26, 2022: Refactor the code and libraries and signficantly improve performance on KITTI 3D MOT evaluation
+- Feb. 26, 2022: Refactor the code and libraries and signficantly improve performance on KITTI 3D MOT
 - Aug. 06, 2020: Extended abstract (one oral) accepted at two ECCV workshops: [WiCV](https://sites.google.com/view/wicvworkshop-eccv2020/), [PAD](https://sites.google.com/view/pad2020/accepted-papers?authuser=0)
 - Jul. 05, 2020: 2D MOT results on KITTI for all three categories released
 - Jul. 04, 2020: Code modularized and a minor bug in KITTI evaluation for DontCare objects fixed
@@ -93,9 +93,9 @@ $ export PYTHONPATH=${PYTHONPATH}:/home/user/workspace/code/AB3DMOT/Xinshuo_PyTo
 ## 3D Object Detection
 For convenience, we provide the 3D detection of PointRCNN on the KITTI MOT dataset at "./data/KITTI/" for car, pedestrian and cyclist splits. Our detection results follow the format of the KITTI 3D Object Detection Challenge (format definition can be found in the object development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d) except that the order is switched. We show an example of detection as follows:
 
-Frame | Type   | 2D BBOX (x1, y1, x2, y2)       | Score | 3D BBOX (h, w, l, x, y, z, rot_y) | Alpha  | 
-------|:------:|:------------------------------:|:----------:|:---------------------------------:|:-------------:
- 0    | 2 (car) | 726.4, 173.69, 917.5, 315.1 |  13.85     | 1.56, 1.58, 3.48, 2.57, 1.57, 9.72, -1.56 | -1.82 | 
+Frame |   Type  |   2D BBOX (x1, y1, x2, y2)  | Score |    3D BBOX (h, w, l, x, y, z, rot_y)      | Alpha | 
+------|:-------:|:---------------------------:|:-----:|:-----------------------------------------:|:-----:|
+ 0    | 2 (car) | 726.4, 173.69, 917.5, 315.1 | 13.85 | 1.56, 1.58, 3.48, 2.57, 1.57, 9.72, -1.56 | -1.82 | 
  
 ## 3D Multi-Object Tracking
 
@@ -132,27 +132,27 @@ Then, the results should be exactly same as below, except for the FPS which migh
 
 Results evaluated with the 0.25 3D IoU threshold:
 
- Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
---------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  93.34     | 45.51     | 78.49     | 86.47    |  79.40  |  0  | 15   | 368  | 766  | 108.7
- *Pedestrian*   |  82.73     | 34.72     | 62.54     | 73.86    |  67.58  |  4  | 62   | 589  | 1965 | 119.2
- *Cyclist*      |  93.78     | 47.88     | 81.97     | 84.79    |  77.23  |  1  | 3    | 114  | 90   | 980.7
- *Overall*      |  89.62     | 42.70     | 74.33     | 81.71    |  74.74  |  5  | 80   | 1071 | 2821 | -
+ Category       | sAMOTA |  MOTA  |  MOTP  | IDS | FRAG |  FP  |  FN  |  FPS 
+--------------- |:------:|:------:|:------:|:---:|:----:|:----:|:----:|:----:|
+ *Car*          | 93.34  | 86.47  |  79.40 |  0  | 15   | 368  | 766  | 108.7
+ *Pedestrian*   | 82.73  | 73.86  |  67.58 |  4  | 62   | 589  | 1965 | 119.2
+ *Cyclist*      | 93.78  | 84.79  |  77.23 |  1  | 3    | 114  | 90   | 980.7
+ *Overall*      | 89.62  | 81.71  |  74.74 |  5  | 80   | 1071 | 2821 | -
  
 Results evaluated with the 0.5 3D IoU threshold:
 
- Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
---------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  92.57     | 44.85     | 78.69     | 84.81    |  79.82  |  0  | 49   | 456  | 817  | 108.7
- *Pedestrian*   |  77.68     | 31.50     | 59.58     | 68.19    |  68.55  |  2  | 132  | 888  | 2223 | 119.2
- *Cyclist*      |  92.05     | 46.17     | 82.21     | 83.38    |  77.52  |  1  | 5    | 124  | 99   | 980.7
- *Overall*      |  87.43     | 40.84     | 73.49     | 78.79    |  75.30  |  3  | 186  | 1468 | 3139 | -
+ Category       | sAMOTA |  MOTA  |  MOTP  | IDS | FRAG |  FP  |  FN  |  FPS 
+--------------- |:------:|:------:|:------:|:---:|:----:|:----:|:----:|:-----:
+ *Car*          | 92.57  | 84.81  | 79.82  |  0  | 49   | 456  | 817  | 108.7
+ *Pedestrian*   | 77.68  | 68.19  | 68.55  |  2  | 132  | 888  | 2223 | 119.2
+ *Cyclist*      | 92.05  | 83.38  | 77.52  |  1  | 5    | 124  | 99   | 980.7
+ *Overall*      | 87.43  | 78.79  | 75.30  |  3  | 186  | 1468 | 3139 | -
 
 Results evaluated with the 0.7 3D IoU threshold:
 
- Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
---------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  74.96     | 30.60     | 69.58     | 62.48    |  82.64  |  0  | 173   | 1065 | 2079  | 108.7
+ Category       | sAMOTA |  MOTA  |  MOTP  | IDS | FRAG |  FP  |  FN  |  FPS 
+--------------- |:------:|:------:|:------:|:---:|:----:|:----:|:----:|:-----:
+ *Car*          | 74.96  | 62.48  |  82.64 |  0  | 173  | 1065 | 2079 | 108.7
 
 Note that the results are slightly higher than our original IROS 2020 paper due to some improvements we made in the code. We will describe those in a follow up report very soon.
 
@@ -165,12 +165,12 @@ $ python3 evaluation/evaluate_kitti3dmot.py pointrcnn_val_H1 1 2D 0.5
 
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. 
 
- Category       | sAMOTA | AMOTA | AMOTP | MOTA | MOTP | IDS | FRAG | FP | FN | FPS 
---------------- |:----------:|:---------:|:--------:|:-------:|:------:|:---:|:--:|:---:|:--:|:---:
- *Car*          |  93.08     | 45.30     | 84.58     | 85.98    |  86.95  |   2 | 25   | 394  | 779  | 108.7
- *Pedestrian*   |  69.70     | 24.38     | 55.77     | 60.41    |  67.18  | 119 | 477  | 1075 | 2681 | 119.2
- *Cyclist*      |  91.62     | 45.92     | 87.51     | 83.01    |  85.55  |   0 | 7    | 130  | 99   | 980.7
- *Overall*      |  84.80     | 38.53     | 75.95     | 76.47    |  79.89  | 121 | 509  | 1599 | 3559 | -
+ Category       | sAMOTA |  MOTA  |  MOTP  | IDS | FRAG |  FP  |  FN  |  FPS 
+--------------- |:------:|:------:|:------:|:---:|:----:|:----:|:----:|:-----:
+ *Car*          | 93.08  | 85.98  | 86.95  |   2 | 25   | 394  | 779  | 108.7
+ *Pedestrian*   | 69.70  | 60.41  | 67.18  | 119 | 477  | 1075 | 2681 | 119.2
+ *Cyclist*      | 91.62  | 83.01  | 85.55  |   0 | 7    | 130  | 99   | 980.7
+ *Overall*      | 84.80  | 76.47  | 79.89  | 121 | 509  | 1599 | 3559 | -
   
 ### 2D MOT Evaluation on KITTI MOT Test Set
 
