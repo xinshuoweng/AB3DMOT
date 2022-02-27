@@ -7,6 +7,6 @@ pillow
 # pillow==8.3.2
 opencv-python==4.2.0.32
 glob2==0.6
-PyYAML==3.12
+PyYAML==5.4
 easydict==1.9
 llvmlite==0.32.1 			
