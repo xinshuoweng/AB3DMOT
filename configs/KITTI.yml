@@ -1,0 +1,18 @@
+# ------------------- General Options -------------------------
+description                  : AB3DMOT
+seed                         : 0
+
+# --------------- main.py
+save_root                    : ./results/KITTI
+dataset                      : KITTI      # KITTI
+split                        : val        # val, test
+det_method                   : pointrcnn  # name of the detector [pointrcnn, pvrcnn]
+cat_list                     : ['Car', 'Pedestrian', 'Cyclist']
+
+score_threshold              : -10000     # filter out tracklet with low confidence if necessary
+hypothesis                   : 1          # >1 to allow multi-hypothesis tracking
+
+# --------------- model.py
+ego_com                      : true      # turn on only slightly reduce speed but increase a lot for performance
+vis                          : false       # only for debug or visualization purpose, will significantly reduce speed
+affi_pro                     : true

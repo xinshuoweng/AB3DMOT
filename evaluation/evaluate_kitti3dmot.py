@@ -76,7 +76,8 @@ class trackingEvaluation(object):
              missed         - number of missed targets (FN)
     """
 
-    def __init__(self, t_sha, gt_path="./evaluation", max_truncation = 0, min_height = 25, max_occlusion = 2, mail=None, cls="car", eval_3diou=True, eval_2diou=False):
+    def __init__(self, t_sha, gt_path="./evaluation", max_truncation = 0, min_height = 25, max_occlusion = 2, \
+        mail=None, cls="car", eval_3diou=True, eval_2diou=False, num_hypo=1, thres=None):
         # get number of sequences and
         # get number of frames per sequence from test mapping
         # (created while extracting the benchmark)
@@ -100,7 +101,7 @@ class trackingEvaluation(object):
         # data and parameter
         self.gt_path           = os.path.join(gt_path, "label")
         self.t_sha             = t_sha
-        self.t_path            = os.path.join("./results", t_sha, "data")
+        self.t_path            = os.path.join("./results/KITTI", t_sha, "data_%d" % (int(num_hypo)-1))
         
         # statistics and numbers for evaluation
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
@@ -149,11 +150,14 @@ class trackingEvaluation(object):
         
         self.eval_2diou = eval_2diou
         self.eval_3diou = eval_3diou
-        if eval_2diou: 
-            self.min_overlap   = 0.5  # minimum bounding box overlap for 3rd party metrics
-        elif eval_3diou: 
-            self.min_overlap   = 0.25 # minimum bounding box overlap for 3rd party metrics
-        else: assert False
+        if thres is None:
+            if eval_2diou: 
+                self.min_overlap   = 0.5  # minimum bounding box overlap for 3rd party metrics
+            elif eval_3diou: 
+                self.min_overlap   = 0.25 # minimum bounding box overlap for 3rd party metrics
+            else: assert False
+        else:
+            self.min_overlap = thres
         # print('min overlap creteria is %f' % self.min_overlap)
 
         self.max_truncation    = max_truncation # maximum truncation of an object for evaluation
@@ -1075,7 +1079,7 @@ class stat:
         # zxc
 
     def plot(self):
-        save_dir = os.path.join("./results", self.t_sha)
+        save_dir = os.path.join("./results/KITTI", self.t_sha)
 
         self.plot_over_recall(self.mota_list, 'MOTA - Recall Curve', 'MOTA', os.path.join(save_dir, 'MOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.sMOTA_list, 'sMOTA - Recall Curve', 'sMOTA', os.path.join(save_dir, 'sMOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
@@ -1085,7 +1089,7 @@ class stat:
         self.plot_over_recall(self.fn_list, 'False Negative - Recall Curve', 'False Negative', os.path.join(save_dir, 'FN_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.precision_list, 'Precision - Recall Curve', 'Precision', os.path.join(save_dir, 'precision_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
 
-def evaluate(result_sha,mail,eval_3diou,eval_2diou):
+def evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres):
     """
         Entry point for evaluation, will load the data and start evaluation for
         CAR and PEDESTRIAN if available.
@@ -1099,9 +1103,9 @@ def evaluate(result_sha,mail,eval_3diou,eval_2diou):
     else:
         assert False, 'error'
     classes = []
-    for c in ("car", "pedestrian", "cyclist"):
-    # for c in ("car"):
-        e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou)
+    # for c in ("car", "pedestrian", "cyclist"):
+    for c in ("cyclist", "pedestrian", "car"):
+        e = trackingEvaluation(t_sha=result_sha, mail=mail,cls=c,eval_3diou=eval_3diou,eval_2diou=eval_2diou,num_hypo=num_hypo,thres=thres)
         # load tracker data and check provided classes
         try:
             if not e.loadTracker():
@@ -1173,25 +1177,28 @@ if __name__ == "__main__":
 
     # check for correct number of arguments. if user_sha and email are not supplied,
     # no notification email is sent (this option is used for auto-updates)
-    if len(sys.argv)!=2 and len(sys.argv)!=3:
-      print("Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)")
-      sys.exit(1);
+    if len(sys.argv)!=3 and len(sys.argv)!=4 and len(sys.argv)!=5:
+        print("Usage: python3 evaluation/evaluate_kitti3dmot.py result_sha num_hypothesis(e.g., 1) dimension(e.g., 2D or 3D) thres(e.g., 0.25)")
+        sys.exit(1);
 
     # get unique sha key of submitted results
     result_sha = sys.argv[1]
+    num_hypo = sys.argv[2]
     mail = mailpy.Mail("")
     # 
-    if len(sys.argv)==3:
-        if sys.argv[2] == '2D':
+    if len(sys.argv)>=4:
+        if sys.argv[3] == '2D':
             eval_3diou, eval_2diou = False, True      # eval 2d
-        elif sys.argv[2] == '3D':
+        elif sys.argv[3] == '3D':
             eval_3diou, eval_2diou = True, False        # eval 3d
         else:
-            print("Usage: python eval_kitti3dmot.py result_sha ?D(e.g. 2D or 3D)")
-            sys.exit(1);            
+            print("Usage: python3 evaluation/evaluate_kitti3dmot.py result_sha num_hypothesis(e.g., 1) dimension(e.g., 2D or 3D) thres(e.g., 0.25)")
+            sys.exit(1);    
+        if len(sys.argv)==5: thres = float(sys.argv[4])
+        else: thres = None
     else:
         eval_3diou, eval_2diou = True, False        # eval 3d
+        thres = None
 
     # evaluate results
-    success = evaluate(result_sha,mail,eval_3diou,eval_2diou)
-    
+    success = evaluate(result_sha,mail,num_hypo,eval_3diou,eval_2diou,thres)

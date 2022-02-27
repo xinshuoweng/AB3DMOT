@@ -3,85 +3,138 @@
 
 from __future__ import print_function
 import matplotlib; matplotlib.use('Agg')
-import os, numpy as np, time, sys
-from AB3DMOT_libs.model import AB3DMOT
-from xinshuo_io import load_list_from_folder, fileparts, mkdir_if_missing
+import os, numpy as np, time, sys, argparse
+from AB3DMOT_libs.utils import Config, get_subfolder_seq, initialize
+from AB3DMOT_libs.io import load_detection, get_saving_dir, get_frame_det, save_results, save_affinity
+from combine_trk_cat import combine_trk_cat
+from xinshuo_io import mkdir_if_missing, save_txt_file
+from xinshuo_miscellaneous import get_timestring, print_log
 
-if __name__ == '__main__':
-	if len(sys.argv) != 2:
-		print('Usage: python main.py result_sha(e.g., pointrcnn_Car_test)')
-		sys.exit(1)
+def parse_args():
+    parser = argparse.ArgumentParser(description='AB3DMOT')
+    parser.add_argument('--dataset', type=str, default='nuScenes', help='KITTI, nuScenes')
+    parser.add_argument('--split', type=str, default='', help='train, val, test')
+    args = parser.parse_args()
+    return args
 
-	result_sha = sys.argv[1]
-	save_root = './results'
-	det_id2str = {1:'Pedestrian', 2:'Car', 3:'Cyclist'}
+def main_per_cat(cfg, cat, log, ID_start):
 
-	seq_file_list, num_seq = load_list_from_folder(os.path.join('data/KITTI', result_sha))
-	total_time, total_frames = 0.0, 0
-	save_dir = os.path.join(save_root, result_sha); mkdir_if_missing(save_dir)
-	eval_dir = os.path.join(save_dir, 'data'); mkdir_if_missing(eval_dir)
+	# get data-cat-split specific path
+	result_sha = '%s_%s_%s' % (cfg.det_method, cat, cfg.split)
+	det_root = os.path.join('./data', cfg.dataset, result_sha)
+	trk_root = os.path.join('./data', cfg.dataset, 'tracking')
+	subfolder, det_id2str, hw, seq_eval = get_subfolder_seq(cfg.dataset, cfg.split)
+	save_dir = os.path.join(cfg.save_root, result_sha+'_H%d'%cfg.hypothesis); mkdir_if_missing(save_dir)
+
+	# create eval dir for each hypothesis 
+	eval_dir_dict = dict()
+	for index in range(cfg.hypothesis):
+		eval_dir_dict[index] = os.path.join(save_dir, 'data_%d' % index); mkdir_if_missing(eval_dir_dict[index]) 		
+
+	# loop every sequence
 	seq_count = 0
-	for seq_file in seq_file_list:
-		_, seq_name, _ = fileparts(seq_file)
-		eval_file = os.path.join(eval_dir, seq_name + '.txt'); eval_file = open(eval_file, 'w')
-		save_trk_dir = os.path.join(save_dir, 'trk_withid', seq_name); mkdir_if_missing(save_trk_dir)
+	total_time, total_frames = 0.0, 0
+	for seq_name in seq_eval:
+		seq_file = os.path.join(det_root, seq_name+'.txt')
+		seq_dets, flag = load_detection(seq_file) 				# load detection
+		if not flag: continue									# no detection
 
-		mot_tracker = AB3DMOT() 
-		seq_dets = np.loadtxt(seq_file, delimiter=',')          # load detections, N x 15
-		
-		# if no detection in a sequence
-		if len(seq_dets.shape) == 1: seq_dets = np.expand_dims(seq_dets, axis=0) 	
-		if seq_dets.shape[1] == 0:
-			eval_file.close()
-			continue
+		# create folders for saving
+		eval_file_dict, save_trk_dir, affinity_dir, affinity_vis = \
+			get_saving_dir(eval_dir_dict, seq_name, save_dir, cfg.hypothesis)	
+
+		# initialize tracker
+		tracker, frame_list = initialize(cfg, trk_root, save_dir, subfolder, seq_name, cat, ID_start, hw, log)
 
 		# loop over frame
-		min_frame, max_frame = int(seq_dets[:, 0].min()), int(seq_dets[:, 0].max())
+		# min_frame, max_frame = int(seq_dets[:, 0].min()), int(seq_dets[:, 0].max())
+		min_frame, max_frame = int(frame_list[0]), int(frame_list[-1])
 		for frame in range(min_frame, max_frame + 1):
+			# add an additional frame here to deal with the case that the last frame, although no detection
+			# but should output an N x 0 affinity for consistency
+			
 			# logging
-			print_str = 'processing %s: %d/%d, %d/%d   \r' % (seq_name, seq_count, num_seq, frame, max_frame)
+			print_str = 'processing %s %s: %d/%d, %d/%d   \r' % (result_sha, seq_name, seq_count, \
+				len(seq_eval), frame, max_frame)
 			sys.stdout.write(print_str)
 			sys.stdout.flush()
-			save_trk_file = os.path.join(save_trk_dir, '%06d.txt' % frame); save_trk_file = open(save_trk_file, 'w')
 
-			# get irrelevant information associated with an object, not used for associationg
-			ori_array = seq_dets[seq_dets[:, 0] == frame, -1].reshape((-1, 1))		# orientation
-			other_array = seq_dets[seq_dets[:, 0] == frame, 1:7] 		# other information, e.g, 2D box, ...
-			additional_info = np.concatenate((ori_array, other_array), axis=1)		
+			# tracking by detection
+			dets_frame = get_frame_det(seq_dets, frame)
+			since = time.time()
+			results, affi = tracker.track(dets_frame, frame, seq_name)		
+			total_time += time.time() - since
 
-			dets = seq_dets[seq_dets[:,0] == frame, 7:14]            # h, w, l, x, y, z, theta in camera coordinate follwing KITTI convention
-			dets_all = {'dets': dets, 'info': additional_info}
+			# saving affinity matrix, between the past frame and current frame
+			# e.g., for 000006.npy, it means affinity between frame 5 and 6
+			# note that the saved value in affinity can be different in reality because it is between the 
+			# original detections and ego-motion compensated predicted tracklets, rather than between the 
+			# actual two sets of output tracklets
+			save_affi_file = os.path.join(affinity_dir, '%06d.npy' % frame)
+			save_affi_vis  = os.path.join(affinity_vis, '%06d.txt' % frame)
+			if (affi is not None) and (affi.shape[0] + affi.shape[1] > 0): 
+				# save affinity as long as there are tracklets in at least one frame
+				np.save(save_affi_file, affi)
 
-			# important
-			start_time = time.time()
-			trackers = mot_tracker.update(dets_all)
-			cycle_time = time.time() - start_time
-			total_time += cycle_time
+				# cannot save for visualization unless both two frames have tracklets
+				if affi.shape[0] > 0 and affi.shape[1] > 0:
+					save_affinity(affi, save_affi_vis)
 
-			# saving results, loop over each tracklet			
-			for d in trackers:
-				bbox3d_tmp = d[0:7]       # h, w, l, x, y, z, theta in camera coordinate
-				id_tmp = d[7]
-				ori_tmp = d[8]
-				type_tmp = det_id2str[d[9]]
-				bbox2d_tmp_trk = d[10:14]
-				conf_tmp = d[14]
-
-				# save in detection format with track ID, can be used for dection evaluation and tracking visualization
-				str_to_srite = '%s -1 -1 %f %f %f %f %f %f %f %f %f %f %f %f %f %d\n' % (type_tmp, ori_tmp,
-					bbox2d_tmp_trk[0], bbox2d_tmp_trk[1], bbox2d_tmp_trk[2], bbox2d_tmp_trk[3], 
-					bbox3d_tmp[0], bbox3d_tmp[1], bbox3d_tmp[2], bbox3d_tmp[3], bbox3d_tmp[4], bbox3d_tmp[5], bbox3d_tmp[6], conf_tmp, id_tmp)
-				save_trk_file.write(str_to_srite)
-
-				# save in tracking format, for 3D MOT evaluation
-				str_to_srite = '%d %d %s 0 0 %f %f %f %f %f %f %f %f %f %f %f %f %f\n' % (frame, id_tmp, 
-					type_tmp, ori_tmp, bbox2d_tmp_trk[0], bbox2d_tmp_trk[1], bbox2d_tmp_trk[2], bbox2d_tmp_trk[3], 
-					bbox3d_tmp[0], bbox3d_tmp[1], bbox3d_tmp[2], bbox3d_tmp[3], bbox3d_tmp[4], bbox3d_tmp[5], bbox3d_tmp[6], 
-					conf_tmp)
-				eval_file.write(str_to_srite)
+			# saving trajectories, loop over each hypothesis
+			for hypo in range(cfg.hypothesis):
+				save_trk_file = os.path.join(save_trk_dir[hypo], '%06d.txt' % frame)
+				save_trk_file = open(save_trk_file, 'w')
+				for result_tmp in results[hypo]:				# N x 15
+					save_results(result_tmp, save_trk_file, eval_file_dict[hypo], \
+						det_id2str, frame, cfg.score_threshold)
+				save_trk_file.close()
 
 			total_frames += 1
-			save_trk_file.close()
 		seq_count += 1
-		eval_file.close()    
-	print('Total Tracking took: %.3f for %d frames or %.1f FPS' % (total_time, total_frames, total_frames / total_time))
+
+		for index in range(cfg.hypothesis): 
+			eval_file_dict[index].close()
+			ID_start = max(ID_start, tracker.ID_count[index])
+
+	print_log('%s, %25s: %4.f seconds for %5d frames or %6.1f FPS, metric is %s = %.2f' % \
+		(cfg.dataset, result_sha, total_time, total_frames, total_frames / total_time, \
+		tracker.metric, tracker.thres), log=log)
+	
+	return ID_start
+
+def main(args):
+
+	# load config files
+	config_path = './configs/%s.yml' % args.dataset
+	cfg, settings_show = Config(config_path)
+
+	# overwrite data split
+	if args.split is not '':
+		cfg.split = args.split
+
+	# print configs
+	time_str = get_timestring()
+	log = os.path.join(cfg.save_root, 'log/log_%s_%s_%s.txt' % (time_str, cfg.dataset, cfg.split))
+	mkdir_if_missing(log); log = open(log, 'w')
+	for idx, data in enumerate(settings_show):
+		print_log(data, log, display=False)
+
+	# global ID counter used for all categories, not start from 1 for each category to prevent different 
+	# categories of objects have the same ID. This allows visualization of all object categories together
+	# without ID conflicting, Also use 1 (not 0) as start because MOT benchmark requires positive ID
+	ID_start = 1							
+
+	# run tracking for each category
+	for cat in cfg.cat_list:
+		ID_start = main_per_cat(cfg, cat, log, ID_start)
+
+	# combine results for every category
+	print_log('\ncombining results......', log=log)
+	combine_trk_cat(cfg.split, cfg.dataset, cfg.det_method, 'H%d' % cfg.hypothesis, cfg.hypothesis)
+	print_log('\nDone!', log=log)
+	log.close()
+
+if __name__ == '__main__':
+
+	args = parse_args()
+	main(args)
