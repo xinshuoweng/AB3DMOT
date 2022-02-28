@@ -38,18 +38,24 @@ def get_subfolder_seq(dataset, split):
 		if split == 'val':   seq_eval = ['0001', '0006', '0008', '0010', '0012', '0013', '0014', '0015', '0016', '0018', '0019']    # val
 		if split == 'test':  seq_eval  = ['%04d' % i for i in range(29)]
 	
+		data_root = os.path.join('./data/KITTI') 		# path containing the KITTI root 
+
 	elif dataset == 'nuScenes':			# nuScenes
-		det_id2str = {1: 'Pedestrian', 2: 'Car', 3: 'Bicycle', 4: 'Motorcycle', 5: 'Bus', 6: 'Trailer', 7: 'Truck'}
-		
+		det_id2str = {1: 'Pedestrian', 2: 'Car', 3: 'Bicycle', 4: 'Motorcycle', 5: 'Bus', \
+			6: 'Trailer', 7: 'Truck', 8: 'Construction_vehicle', 9: 'Barrier', 10: 'Traffic_cone'}
+
 		subfolder = split
 		hw = {'image': (900, 1600), 'lidar': (720, 1920)}
 
 		if split == 'train': seq_eval = get_split()[0]		# 700 scenes
 		if split == 'val':   seq_eval = get_split()[1]		# 150 scenes
 		if split == 'test':  seq_eval = get_split()[2]      # 150 scenes
+
+		data_root = os.path.join('./data/nuScenes/nuKITTI') 	# path containing the nuScenes-converted KITTI root
+
 	else: assert False, 'error'
 		
-	return subfolder, det_id2str, hw, seq_eval
+	return subfolder, det_id2str, hw, seq_eval, data_root
 
 def get_threshold(dataset):
 	# used for visualization only as we want to remove some false positives, also can be 
@@ -82,9 +88,9 @@ def initialize(cfg, data_root, save_dir, subfolder, seq_name, cat, ID_start, hw,
 	vis_dir = os.path.join(save_dir, 'vis_debug', seq_name); mkdir_if_missing(vis_dir)
 
 	# initiate the tracker
-	if cfg.hypothesis > 1:
+	if cfg.num_hypo > 1:
 		tracker = AB3DMOT_multi(cfg, cat, calib=calib, oxts=imu_poses, img_dir=img_seq, vis_dir=vis_dir, hw=hw, log=log_file, ID_init=ID_start) 
-	elif cfg.hypothesis == 1:
+	elif cfg.num_hypo == 1:
 		tracker = AB3DMOT(cfg, cat, calib=calib, oxts=imu_poses, img_dir=img_seq, vis_dir=vis_dir, hw=hw, log=log_file, ID_init=ID_start) 
 	else: assert False, 'error'
 	

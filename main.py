@@ -23,8 +23,8 @@ def main_per_cat(cfg, cat, log, ID_start):
 	# get data-cat-split specific path
 	result_sha = '%s_%s_%s' % (cfg.det_method, cat, cfg.split)
 	det_root = os.path.join('./data', cfg.dataset, 'detection', result_sha)
-	trk_root = os.path.join('./data', cfg.dataset, 'tracking')
-	subfolder, det_id2str, hw, seq_eval = get_subfolder_seq(cfg.dataset, cfg.split)
+	subfolder, det_id2str, hw, seq_eval, data_root = get_subfolder_seq(cfg.dataset, cfg.split)
+	trk_root = os.path.join(data_root, 'tracking')
 	save_dir = os.path.join(cfg.save_root, result_sha + '_H%d' % cfg.num_hypo); mkdir_if_missing(save_dir)
 
 	# create eval dir for each hypothesis 
@@ -48,7 +48,6 @@ def main_per_cat(cfg, cat, log, ID_start):
 		tracker, frame_list = initialize(cfg, trk_root, save_dir, subfolder, seq_name, cat, ID_start, hw, log)
 
 		# loop over frame
-		# min_frame, max_frame = int(seq_dets[:, 0].min()), int(seq_dets[:, 0].max())
 		min_frame, max_frame = int(frame_list[0]), int(frame_list[-1])
 		for frame in range(min_frame, max_frame + 1):
 			# add an additional frame here to deal with the case that the last frame, although no detection

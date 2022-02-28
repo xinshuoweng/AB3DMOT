@@ -52,7 +52,7 @@ $ python3 scripts/KITTI/evaluate.py pointrcnn_val_H1 1 3D 0.5
 
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. The overall performance is the performance averaged over three categoeries for sAMOTA, AMOTA, AMOTP, MOTA, MOTP and the summed over three categories for IDS, FRAG, FP, FN. Note that, please run the code when the CPU is not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
 
-#### Results with PointRCNN
+#### PointRCNN + AB3DMOT (KITTI val set)
 
 Results evaluated with the 0.25 3D IoU threshold:
 

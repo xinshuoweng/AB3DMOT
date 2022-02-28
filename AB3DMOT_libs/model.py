@@ -390,11 +390,8 @@ class AB3DMOT(object):
 		NOTE: The number of objects returned may differ from the number of detections provided.
 		"""
 		dets, info = dets_all['dets'], dets_all['info']         # dets: N x 7, float numpy array
-
-		# if self.debug_id:
-		# print('frame is %s' % frame)
-		# if int(frame) > 5: zxc
-
+		if self.debug_id: print('\nframe is %s' % frame)
+	
 		# logging
 		print_str = '\n\n*****************************************\n\nprocessing seq_name/frame %s/%d' % (seq_name, frame)
 		print_log(print_str, log=self.log, display=False)

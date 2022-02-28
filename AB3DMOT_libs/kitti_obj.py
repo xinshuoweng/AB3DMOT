@@ -63,7 +63,18 @@ class Object_3D(object):
         print('3d bbox h,w,l: %f, %f, %f' % (self.h, self.w, self.l))
         print('3d bbox location xyz, ry: (%f, %f, %f), %f' % (self.xyz[0], self.xyz[1], self.xyz[2], self.ry))
 
-    def convert_to_str(self):
-        return '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
-            (self.type, self.trunc, self.occ, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
-                self.h, self.w, self.l, self.xyz[0], self.xyz[1], self.xyz[2], self.ry)
+    def convert_to_det_str(self):
+        if s is None:
+            return '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                (self.type, self.trunc, self.occ, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
+                    self.h, self.w, self.l, self.x, self.y, self.z, self.ry)
+        else:
+            return '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
+                (self.type, self.trunc, self.occ, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
+                    self.h, self.w, self.l, self.x, self.y, self.z, self.ry, self.s)
+
+    def convert_to_trk_str(self, frame, type_id):
+        assert self.s is not None, 'error'    
+        return '%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n' % \
+            (int(frame), type_id, self.xmin, self.ymin, self.xmax, self.ymax, self.s, \
+            self.h, self.w, self.l, self.x, self.y, self.z, self.ry, self.alpha)
