@@ -60,9 +60,9 @@ Please follow carefully our provided [installation instructions](docs/INSTALL.md
 To quickly get a sense of our method's performance on the KITTI dataset, one can run the following command after installation of the code. This step does not require you to download any dataset (a small set of data is already included in this code repository).
 
 ```
-$ python3 main.py --cfg KITTI --split val --det_name pointrcnn --num_hypo 1
+$ python3 main.py --dataset KITTI --split val --det_name pointrcnn --num_hypo 1
 $ python3 scripts/post_processing/trk_conf_threshold.py --result_sha pointrcnn_val_H1
-$ python3 scripts/post_processing/visualization.py --result_sha pointrcnn_val_H1 --split val
+$ python3 scripts/post_processing/visualization.py --result_sha pointrcnn_val_H1_thres --split val
 ```
 
 ## Benchmarking
