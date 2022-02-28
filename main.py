@@ -6,7 +6,7 @@ import matplotlib; matplotlib.use('Agg')
 import os, numpy as np, time, sys, argparse
 from AB3DMOT_libs.utils import Config, get_subfolder_seq, initialize
 from AB3DMOT_libs.io import load_detection, get_saving_dir, get_frame_det, save_results, save_affinity
-from combine_trk_cat import combine_trk_cat
+from scripts.post_processing.combine_trk_cat import combine_trk_cat
 from xinshuo_io import mkdir_if_missing, save_txt_file
 from xinshuo_miscellaneous import get_timestring, print_log
 
@@ -14,6 +14,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='AB3DMOT')
     parser.add_argument('--dataset', type=str, default='nuScenes', help='KITTI, nuScenes')
     parser.add_argument('--split', type=str, default='', help='train, val, test')
+    parser.add_argument('--det_method', type=str, default='', help='pointrcnn')
     args = parser.parse_args()
     return args
 
@@ -21,14 +22,14 @@ def main_per_cat(cfg, cat, log, ID_start):
 
 	# get data-cat-split specific path
 	result_sha = '%s_%s_%s' % (cfg.det_method, cat, cfg.split)
-	det_root = os.path.join('./data', cfg.dataset, result_sha)
+	det_root = os.path.join('./data', cfg.dataset, 'detection', result_sha)
 	trk_root = os.path.join('./data', cfg.dataset, 'tracking')
 	subfolder, det_id2str, hw, seq_eval = get_subfolder_seq(cfg.dataset, cfg.split)
-	save_dir = os.path.join(cfg.save_root, result_sha+'_H%d'%cfg.hypothesis); mkdir_if_missing(save_dir)
+	save_dir = os.path.join(cfg.save_root, result_sha + '_H%d' % cfg.num_hypo); mkdir_if_missing(save_dir)
 
 	# create eval dir for each hypothesis 
 	eval_dir_dict = dict()
-	for index in range(cfg.hypothesis):
+	for index in range(cfg.num_hypo):
 		eval_dir_dict[index] = os.path.join(save_dir, 'data_%d' % index); mkdir_if_missing(eval_dir_dict[index]) 		
 
 	# loop every sequence
@@ -41,7 +42,7 @@ def main_per_cat(cfg, cat, log, ID_start):
 
 		# create folders for saving
 		eval_file_dict, save_trk_dir, affinity_dir, affinity_vis = \
-			get_saving_dir(eval_dir_dict, seq_name, save_dir, cfg.hypothesis)	
+			get_saving_dir(eval_dir_dict, seq_name, save_dir, cfg.num_hypo)	
 
 		# initialize tracker
 		tracker, frame_list = initialize(cfg, trk_root, save_dir, subfolder, seq_name, cat, ID_start, hw, log)
@@ -81,7 +82,7 @@ def main_per_cat(cfg, cat, log, ID_start):
 					save_affinity(affi, save_affi_vis)
 
 			# saving trajectories, loop over each hypothesis
-			for hypo in range(cfg.hypothesis):
+			for hypo in range(cfg.num_hypo):
 				save_trk_file = os.path.join(save_trk_dir[hypo], '%06d.txt' % frame)
 				save_trk_file = open(save_trk_file, 'w')
 				for result_tmp in results[hypo]:				# N x 15
@@ -92,7 +93,7 @@ def main_per_cat(cfg, cat, log, ID_start):
 			total_frames += 1
 		seq_count += 1
 
-		for index in range(cfg.hypothesis): 
+		for index in range(cfg.num_hypo): 
 			eval_file_dict[index].close()
 			ID_start = max(ID_start, tracker.ID_count[index])
 
@@ -108,9 +109,9 @@ def main(args):
 	config_path = './configs/%s.yml' % args.dataset
 	cfg, settings_show = Config(config_path)
 
-	# overwrite data split
-	if args.split is not '':
-		cfg.split = args.split
+	# overwrite split and detection method
+	if args.split is not '': cfg.split = args.split
+	if args.det_method is not '': cfg.det_method = args.det_method
 
 	# print configs
 	time_str = get_timestring()
@@ -130,7 +131,7 @@ def main(args):
 
 	# combine results for every category
 	print_log('\ncombining results......', log=log)
-	combine_trk_cat(cfg.split, cfg.dataset, cfg.det_method, 'H%d' % cfg.hypothesis, cfg.hypothesis)
+	combine_trk_cat(cfg.split, cfg.dataset, cfg.det_method, 'H%d' % cfg.num_hypo, cfg.num_hypo)
 	print_log('\nDone!', log=log)
 	log.close()
 

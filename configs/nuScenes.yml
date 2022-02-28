@@ -9,8 +9,8 @@ split                        : val      # [train, val, test]
 det_method                   : megvii     # name of the detector [megvii, mapillary, pointpillar]
 cat_list                     : ['Car', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Bus', 'Trailer', 'Truck']
 
-score_threshold              : -10000     # filter out tracklet with low confidence if necessary
-hypothesis                   : 1          # >1 to allow multi-hypothesis tracking
+score_threshold              : -10000     # filter out tracklet with low confidence if necessary, default no filtering here but do it in trk_conf_threshold.py
+num_hypo                     : 1          # >1 to allow multi-hypothesis tracking
 
 # --------------- model.py
 ego_com                      : true      # turn on only slightly reduce speed but increase a lot for performance
