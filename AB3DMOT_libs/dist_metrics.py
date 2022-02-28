@@ -146,7 +146,7 @@ def iou(box_a, box_b, metric='giou_3d'):
 		U_2D = box_a.w * box_a.l + box_b.w * box_b.l - I_2D
 		if metric == 'iou_2d':  return I_2D / U_2D
 		if metric == 'giou_2d': return I_2D / U_2D - (C_2D - U_2D) / C_2D
-	
+
 	elif '3d' in metric:		# return 3D IoU/GIoU
 		overlap_height = compute_height(box_a, box_b)
 		I_3D = I_2D * overlap_height	

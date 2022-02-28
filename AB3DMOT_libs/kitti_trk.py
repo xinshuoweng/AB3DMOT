@@ -6,7 +6,6 @@ from xinshuo_io import load_txt_file
 # read tracklet data in the KITTI tracking results format, one file per sequence
 
 class Tracklet_3D(object):
-    ''' 3d object label '''
     def __init__(self, label_file):
         lines, num_lines = load_txt_file(label_file)
 

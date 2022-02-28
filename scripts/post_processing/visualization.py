@@ -22,21 +22,35 @@ def parse_args():
 def vis(args):
 	
 	# get config
+	file_path = os.path.dirname(os.path.realpath(__file__))
 	result_sha = args.result_sha
-	result_root = os.path.join('./results', args.dataset, result_sha)
+	result_root = os.path.join(file_path, '../../results', args.dataset, result_sha)
 	score_threshold = get_threshold(args.dataset)
-
-	# get directory
-	subfolder, det_id2str, hw, seq_eval = get_subfolder_seq(args.dataset, args.split)
-	data_root = os.path.join('./data', args.dataset, 'tracking', subfolder)
-	assert is_path_exists(data_root), '%s folder does not exist' % data_root
 	log = os.path.join(result_root, 'vis_log.txt')
 	mkdir_if_missing(log); log = open(log, 'w')
 
+	# get directory
+	subfolder, det_id2str, hw, seq_eval, data_root = get_subfolder_seq(args.dataset, args.split)
+	trk_root = os.path.join(data_root, 'tracking', subfolder)
+
+	# change to the local mini dataset for a quick demo
+	if not is_path_exists(trk_root):
+		print_log('full %s dataset does not exist at %s, fall back to mini dataset for a quick demo' % \
+			(args.dataset, trk_root), log=log)
+		trk_root = os.path.join(file_path, '../../data/%s/mini', subfolder)
+		assert is_path_exists(trk_root), 'error, unfortunately mini data is missing at %s as well' % trk_root
+
+		# assign sequence in mini data for evaluation on different dataset/split
+		if args.dataset == 'KITTI':
+			if args.split == 'val' : seq_eval = ['0001', '0016']
+			if args.split == 'test': seq_eval = ['0000', '0003']
+		# elif args.dataset == 'nuScenes':
+		else: assert False, 'mini data does not support for %s-%s' % (args.dataset, args.split)
+
 	# loop through every sequence
 	for seq in seq_eval:
-		image_dir = os.path.join(data_root, 'image_02/%s' % seq)
-		calib_file = os.path.join(data_root, 'calib/%s.txt' % seq)
+		image_dir = os.path.join(trk_root, 'image_02/%s' % seq)
+		calib_file = os.path.join(trk_root, 'calib/%s.txt' % seq)
 		result_dir = os.path.join(result_root, 'trk_withid_%d/%s' % (args.hypo_index_vis, seq))
 		save_3d_bbox_dir = os.path.join(result_dir, '../../trk_image_vis/%s' % seq); mkdir_if_missing(save_3d_bbox_dir)
 

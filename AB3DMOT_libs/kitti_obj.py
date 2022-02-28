@@ -64,17 +64,32 @@ class Object_3D(object):
         print('3d bbox location xyz, ry: (%f, %f, %f), %f' % (self.xyz[0], self.xyz[1], self.xyz[2], self.ry))
 
     def convert_to_det_str(self):
-        if s is None:
-            return '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                (self.type, self.trunc, self.occ, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
-                    self.h, self.w, self.l, self.x, self.y, self.z, self.ry)
+        output_str = '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
+            (self.type, self.trunc, self.occ, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
+            self.h, self.w, self.l, self.x, self.y, self.z, self.ry)
+        
+        if self.s is None: return output_str        # no score and id
         else:
-            return '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
-                (self.type, self.trunc, self.occ, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
-                    self.h, self.w, self.l, self.x, self.y, self.z, self.ry, self.s)
+            output_str = '%s %.2f' % (output_str, self.s)
+            if self.id is None: return output_str   # with score, no id
+            else:
+                output_str = '%s %d' % (output_str, self.id)
+                return output_str                   # with score and id
 
-    def convert_to_trk_str(self, frame, type_id):
+    def convert_to_trk_input_str(self, frame, type_id):
+        # format follows the input data, i.e., the standard MOT pre-processed data
+
         assert self.s is not None, 'error'    
-        return '%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n' % \
+        return '%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f' % \
             (int(frame), type_id, self.xmin, self.ymin, self.xmax, self.ymax, self.s, \
             self.h, self.w, self.l, self.x, self.y, self.z, self.ry, self.alpha)
+
+    def convert_to_trk_output_str(self, frame):
+        # format follows the KITTI tracking results format
+
+        assert self.s is not None, 'error'    
+        assert self.id is not None, 'error'    
+        return '%d %d %s %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
+            (int(frame), self.id, self.type, self.trunc, self.occ, self.alpha, \
+            self.xmin, self.ymin, self.xmax, self.ymax, \
+            self.h, self.w, self.l, self.x, self.y, self.z, self.ry, self.s)
