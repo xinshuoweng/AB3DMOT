@@ -21,8 +21,8 @@ year = {2020}
 }
 ```
 
-<img align="center" width="98%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main1.gif">
-<img align="center" width="98%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main2.gif">
+<img align="center" width="100%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main1.gif">
+<img align="center" width="100%" src="https://github.com/xinshuoweng/AB3DMOT/blob/master/main2.gif">
 
 ## Overview
 
