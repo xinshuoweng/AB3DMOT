@@ -29,11 +29,11 @@ Frame |   Type  |   2D BBOX (x1, y1, x2, y2)  | Score |    3D BBOX (h, w, l, x, 
 To run our tracker on the KITTI MOT validation set with the provided pointrcnn detection:
 
 ```
-$ python3 main.py --cfg KITTI --det_method pointrcnn
+$ python3 main.py --cfg KITTI --det_name pointrcnn
 ```
 To run our tracker on the test set with the provided detection, one can change the "split" entry in the config file "./configs/KITTI.yml" from "val" to "test" and then run the same above command, or simply run
 ```
-$ python3 main.py --cfg KITTI --det_method pointrcnn --split test
+$ python3 main.py --cfg KITTI --det_name pointrcnn --split test
 ```
 Then, the results will be saved to the "./results/KITTI" folder. 
 
@@ -100,21 +100,21 @@ Then, the results should be exactly same as below, except for the FPS which migh
 
 To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI MOT **test set**, please run the following: 
 ```
-$ python3 scripts/post_processing/trk_conf_threshold.py --result_sha pointrcnn_Car_test_H1
-$ python3 scripts/post_processing/trk_conf_threshold.py --result_sha pointrcnn_Pedestrian_test_H1
-$ python3 scripts/post_processing/trk_conf_threshold.py --result_sha pointrcnn_Cyclist_test_H1
-$ python3 scripts/post_processing/combine_trk_cat.py --dataset KITTI --split test --suffix H1_thres
+$ python3 scripts/post_processing/trk_conf_threshold.py --result_sha pointrcnn_test_H1
 ```
+
 Then, compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation. Note that KITTI does not release the ground truth labels to users, so we have to use the official KITTI 2D MOT evaluation server for evaluation, which does not include our new metrics.
 ```
 $ ./results/KITTI/pointrcnn_test_H1_thres/data_0
 ```
+
 The results should be similar to our entry on the KITTI 2D MOT leaderboard (http://www.cvlibs.net/datasets/kitti/eval_tracking.php). 
 
 ## Visualization
 
 To visualize the qualitative results of our 3D MOT system on images shown in the paper (Note that the opencv3 is required by this step, please check the opencv version if there is an error):
-  ```
-  $ python3 scripts/post_processing/visualization.py --result_sha pointrcnn_test_H1_thres --split test
-  ```
+```
+$ python3 scripts/post_processing/visualization.py --result_sha pointrcnn_test_H1_thres --split test
+```
+  
 Visualization results are then saved to "./results/KITTI/pointrcnn_test_H1_thres/trk_image_vis" and "./results/KITTI/pointrcnn_test_H1_thres/trk_video_vis"

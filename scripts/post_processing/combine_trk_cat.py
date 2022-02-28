@@ -5,7 +5,7 @@
 
 import os, argparse
 from AB3DMOT_libs.io import combine_files
-from AB3DMOT_libs.utils import find_all_frames, get_subfolder_seq
+from AB3DMOT_libs.utils import find_all_frames, get_subfolder_seq, Config
 from xinshuo_io import mkdir_if_missing, is_path_exists
 
 def parse_args():
@@ -21,14 +21,18 @@ def parse_args():
 def combine_trk_cat(split, dataset, method, suffix, num_hypo):
 
 	# load dataset-specific config
-	root_dir = os.path.join('./results', dataset)
-	_, det_id2str, _, seq_list = get_subfolder_seq(dataset, split)
-	cat_list = det_id2str.values()
+	file_path = os.path.dirname(os.path.realpath(__file__))
+	root_dir = os.path.join(file_path, '../../results', dataset)
+	_, det_id2str, _, seq_list, _ = get_subfolder_seq(dataset, split)
+
+	# load config files
+	config_path = os.path.join(file_path, '../../configs/%s.yml' % dataset)
+	cfg, _ = Config(config_path)
 	log = os.path.join(root_dir, '%s_%s_%s' % (method, split, suffix), 'combine_log.txt')
 	mkdir_if_missing(log); log = open(log, 'w+')
 
 	# source directory
-	subset = ['%s_%s_%s_%s' % (method, cat, split, suffix) for cat in cat_list]
+	subset = ['%s_%s_%s_%s' % (method, cat, split, suffix) for cat in cfg.cat_list]
 
 	# loop through all hypotheses
 	for hypo_index in range(num_hypo):

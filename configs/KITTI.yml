@@ -6,7 +6,7 @@ seed                         : 0
 save_root                    : ./results/KITTI
 dataset                      : KITTI      # KITTI
 split                        : val        # val, test
-det_method                   : pointrcnn  # name of the detector [pointrcnn, pvrcnn]
+det_name                     : pointrcnn  # name of the detector [pointrcnn, pvrcnn]
 cat_list                     : ['Car', 'Pedestrian', 'Cyclist']
 
 score_threshold              : -10000     # filter out tracklet with low confidence if necessary, default no filtering here but do it in trk_conf_threshold.py

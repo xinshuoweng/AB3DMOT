@@ -14,19 +14,19 @@ def parse_args():
     parser = argparse.ArgumentParser(description='AB3DMOT')
     parser.add_argument('--dataset', type=str, default='nuScenes', help='KITTI, nuScenes')
     parser.add_argument('--split', type=str, default='val', help='train, val, test')
-    parser.add_argument('--det_method', type=str, default='centerpoint', help='name of the detection method')
+    parser.add_argument('--det_name', type=str, default='centerpoint', help='name of the detection method')
     args = parser.parse_args()
     return args
 
-def combine_dets(dataset, split, det_method):
+def combine_dets(dataset, split, det_name):
 	
 	# source dir
 	subfolder, det_id2str, _, seq_eval, data_root = get_subfolder_seq(dataset, split)
 	det_str2id = {v: k for k, v in det_id2str.items()}
 
 	# find results dir that contain detections in KITTI object format
-	det_results = os.path.join(data_root, 'object/produced/results', subfolder, det_method, 'data')
-	print('processing %s, %s, %s' % (dataset, det_method, split))
+	det_results = os.path.join(data_root, 'object/produced/results', subfolder, det_name, 'data')
+	print('processing %s, %s, %s' % (dataset, det_name, split))
 	if not is_path_exists(det_results):
 		print('%s dir not exist' % det_results)
 		return
@@ -45,7 +45,7 @@ def combine_dets(dataset, split, det_method):
 		# create save data for each category
 		save_file = dict()
 		for cat in list(det_id2str.values()) + ['all']:
-			save_file[cat] = os.path.join(save_root, '%s_%s_%s/%s.txt' % (det_method, cat, split, seq))
+			save_file[cat] = os.path.join(save_root, '%s_%s_%s/%s.txt' % (det_name, cat, split, seq))
 			mkdir_if_missing(save_file[cat]); save_file[cat] = open(save_file[cat], 'w')
 
 		# for each frame of a sequence, find the synthesized frame ID in the nuKITTI object data
@@ -61,11 +61,11 @@ def combine_dets(dataset, split, det_method):
 			# loop over each detection
 			for obj in dets:
 				type_tmp = det_str2id[obj.type]
-				str_to_write = obj.convert_to_trk_str(frame, type_tmp)
+				str_to_write = obj.convert_to_trk_input_str(frame, type_tmp)
 
 				# save to the corresponding category and also an overall folder
-				save_file[obj.type].write(str_to_write)
-				save_file['all'].write(str_to_write)
+				save_file[obj.type].write(str_to_write + '\n')
+				save_file['all'].write(str_to_write + '\n')
 
 		# close files
 		for cat in save_file.keys():
@@ -74,4 +74,4 @@ def combine_dets(dataset, split, det_method):
 if __name__ == '__main__':	
 
 	args = parse_args()
-	combine_dets(args.dataset, args.split, args.det_method)
+	combine_dets(args.dataset, args.split, args.det_name)

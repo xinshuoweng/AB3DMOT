@@ -14,14 +14,14 @@ def parse_args():
     parser = argparse.ArgumentParser(description='AB3DMOT')
     parser.add_argument('--dataset', type=str, default='nuScenes', help='KITTI, nuScenes')
     parser.add_argument('--split', type=str, default='', help='train, val, test')
-    parser.add_argument('--det_method', type=str, default='', help='pointrcnn')
+    parser.add_argument('--det_name', type=str, default='', help='pointrcnn')
     args = parser.parse_args()
     return args
 
 def main_per_cat(cfg, cat, log, ID_start):
 
 	# get data-cat-split specific path
-	result_sha = '%s_%s_%s' % (cfg.det_method, cat, cfg.split)
+	result_sha = '%s_%s_%s' % (cfg.det_name, cat, cfg.split)
 	det_root = os.path.join('./data', cfg.dataset, 'detection', result_sha)
 	subfolder, det_id2str, hw, seq_eval, data_root = get_subfolder_seq(cfg.dataset, cfg.split)
 	trk_root = os.path.join(data_root, 'tracking')
@@ -110,7 +110,7 @@ def main(args):
 
 	# overwrite split and detection method
 	if args.split is not '': cfg.split = args.split
-	if args.det_method is not '': cfg.det_method = args.det_method
+	if args.det_name is not '': cfg.det_name = args.det_name
 
 	# print configs
 	time_str = get_timestring()
@@ -130,7 +130,7 @@ def main(args):
 
 	# combine results for every category
 	print_log('\ncombining results......', log=log)
-	combine_trk_cat(cfg.split, cfg.dataset, cfg.det_method, 'H%d' % cfg.num_hypo, cfg.num_hypo)
+	combine_trk_cat(cfg.split, cfg.dataset, cfg.det_name, 'H%d' % cfg.num_hypo, cfg.num_hypo)
 	print_log('\nDone!', log=log)
 	log.close()
 

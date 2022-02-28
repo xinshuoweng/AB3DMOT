@@ -6,7 +6,7 @@ seed                         : 0
 save_root                    : ./results/nuScenes
 dataset                      : nuScenes
 split                        : val      # [train, val, test]
-det_method                   : megvii     # name of the detector [megvii, mapillary, pointpillar]
+det_name                     : megvii     # name of the detector [centerpoint, megvii, mapillary, pointpillar]
 cat_list                     : ['Car', 'Pedestrian', 'Bicycle', 'Motorcycle', 'Bus', 'Trailer', 'Truck']
 
 score_threshold              : -10000     # filter out tracklet with low confidence if necessary, default no filtering here but do it in trk_conf_threshold.py
