@@ -37,10 +37,6 @@ class Calibration(object):
 
         rect/ref camera coord:
         right x, down y, front z
-
-        Ref (KITTI paper): http://www.cvlibs.net/publications/Geiger2013IJRR.pdf
-
-        TODO(rqi): do matrix multiplication only once for each projection.
     '''
     def __init__(self, calib_filepath, from_video=False):
         if from_video:
@@ -51,10 +47,14 @@ class Calibration(object):
         # Projection matrix from rect camera coord to image2 coord
         self.P = calibs['P2'] 
         self.P = np.reshape(self.P, [3,4])
+
         # Rigid transform from Velodyne coord to reference camera coord
         self.V2C = calibs['Tr_velo_to_cam']
         self.V2C = np.reshape(self.V2C, [3,4])
+        self.V2C_R = self.V2C[:3, :3]
+        self.V2C_T = self.V2C[:, 3]
         self.C2V = inverse_rigid_trans(self.V2C)
+        
         # Rotation from reference camera coord to rect camera coord
         self.R0 = calibs['R0_rect']
         self.R0 = np.reshape(self.R0,[3,3])

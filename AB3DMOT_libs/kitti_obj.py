@@ -1,57 +1,69 @@
 import numpy as np, cv2, os
 from AB3DMOT_libs.box import Box3D
 
-class Object3d(object):
-    ''' 3d object label '''
-    def __init__(self, label_file_line):
-        data = label_file_line.split(' ')
-        data[1:] = [float(x) for x in data[1:]]
+# read object data in the KITTI detection format, one file per frame
 
-        # extract label, truncation, occlusion
-        self.type = data[0] # 'Car', 'Pedestrian', ...
-        self.truncation = data[1] # truncated pixel ratio [0..1]
-        self.occlusion = int(data[2]) # 0=visible, 1=partly occluded, 2=fully occluded, 3=unknown
-        self.alpha = data[3] # object observation angle [-pi..pi]
+def read_label(label_filename):
+    lines = [line.rstrip() for line in open(label_filename)]
+    objects = [Object_3D(line) for line in lines]
+    return objects
 
-        # extract 2d bounding box in 0-based coordinates
-        self.xmin = data[4] # left
-        self.ymin = data[5] # top
-        self.xmax = data[6] # right
-        self.ymax = data[7] # bottom
+class Object_3D(object):
+    def __init__(self, label_file_line=None, obj_type=None, trunc=None, occ=None, alpha=None, \
+        xmin=None, ymin=None, xmax=None, ymax=None, \
+        h=None, w=None, l=None, x=None, y=None, z=None, ry=None, \
+        s=None, id=None, velo_2d=None, velo_3d=None):
+
+        # initialize
+        self.type = obj_type
+        self.trunc, self.occ, self.alpha = trunc, occ, alpha
+        self.xmin, self.ymin, self.xmax, self.ymax = xmin, ymin, xmax, ymax
+        self.h, self.w, self.l, self.x, self.y, self.z, self.ry = h, w, l, x, y, z, ry
+        self.s = s       # score
+        self.id = id     # identity
+        self.velo_3d, self.velo_2d = velo_3d, velo_2d   # velocity
+
+        # overwrite if the data file is provided
+        if label_file_line is not None:
+            data = label_file_line.split(' ')
+            data[1:] = [float(x) for x in data[1:]]
+
+            # extract label, truncation, occlusion
+            self.type = data[0] # 'Car', 'Pedestrian', ...
+
+            # truncated pixel ratio [0..1]
+            # occlusion 0=visible, 1=partly occluded, 2=fully occluded, 3=unknown
+            # object observation angle [-pi..pi]
+            self.trunc, self.occ, self.alpha = data[1], int(data[2]), data[3] 
+
+            # extract 2d bounding box in 0-based coordinates
+            self.xmin, self.ymin, self.xmax, self.ymax = data[4], data[5], data[6], data[7]
+
+            # extract 3d bounding box information
+            self.h, self.w, self.l, self.x, self.y, self.z = \
+                data[8], data[9], data[10], data[11], data[12], data[13] 
+            
+            self.ry = data[14]  # yaw angle (around Y-axis in camera coordinates) [-pi..pi]
+            
+            # update score/ID
+            if len(data) > 15: self.s = float(data[15])
+            if len(data) > 16: self.id = int(data[16])
+        
+        # group some data
         self.box2d = np.array([self.xmin,self.ymin,self.xmax,self.ymax])
-        
-        # extract 3d bounding box information
-        self.h = data[8]    # box height
-        self.w = data[9]    # box width
-        self.l = data[10]   # box length (in meters)
-        self.x = data[11]
-        self.y = data[12]
-        self.z = data[13] 
-        self.center = [self.x, self.y, self.z] # location (x,y,z) in camera coord.
-        self.ry = data[14]  # yaw angle (around Y-axis in camera coordinates) [-pi..pi]
-        
-        # additional information
-        self.s = None       # score
-        self.id = None      # identity
-
-        if len(data) > 15: self.s = float(data[15])
-        if len(data) > 16: self.id = int(data[16])
+        self.xyz = [self.x, self.y, self.z]  # location (x,y,z) in camera coord.
+        self.wlh = [self.w, self.l, self.h]
 
     def get_box3D(self):
         return Box3D(self.x, self.y, self.z, self.h, self.w, self.l, self.ry, self.s)
 
     def print_object(self):
-        print('Type, truncation, occlusion, alpha: %s, %d, %d, %f' % (self.type, self.truncation, self.occlusion, self.alpha))
+        print('Type, truncation, occlusion, alpha: %s, %d, %d, %f' % (self.type, self.trunc, self.occ, self.alpha))
         print('2d bbox (x0,y0,x1,y1): %f, %f, %f, %f' % (self.xmin, self.ymin, self.xmax, self.ymax))
         print('3d bbox h,w,l: %f, %f, %f' % (self.h, self.w, self.l))
-        print('3d bbox location, ry: (%f, %f, %f), %f' % (self.center[0], self.center[1], self.center[2], self.ry))
+        print('3d bbox location xyz, ry: (%f, %f, %f), %f' % (self.xyz[0], self.xyz[1], self.xyz[2], self.ry))
 
     def convert_to_str(self):
         return '%s %.2f %d %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
-            (self.type, self.truncation, self.occlusion, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
-                self.h, self.w, self.l, self.center[0], self.center[1], self.center[2], self.ry)
-
-def read_label(label_filename):
-    lines = [line.rstrip() for line in open(label_filename)]
-    objects = [Object3d(line) for line in lines]
-    return objects
+            (self.type, self.trunc, self.occ, self.alpha, self.xmin, self.ymin, self.xmax, self.ymax,
+                self.h, self.w, self.l, self.xyz[0], self.xyz[1], self.xyz[2], self.ry)
