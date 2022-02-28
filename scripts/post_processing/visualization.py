@@ -37,7 +37,7 @@ def vis(args):
 	if not is_path_exists(trk_root):
 		print_log('full %s dataset does not exist at %s, fall back to mini dataset for a quick demo' % \
 			(args.dataset, trk_root), log=log)
-		trk_root = os.path.join(file_path, '../../data/%s/mini', subfolder)
+		trk_root = os.path.join(file_path, '../../data/%s/mini' % args.dataset, subfolder)
 		assert is_path_exists(trk_root), 'error, unfortunately mini data is missing at %s as well' % trk_root
 
 		# assign sequence in mini data for evaluation on different dataset/split

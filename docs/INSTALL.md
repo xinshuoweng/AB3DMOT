@@ -38,6 +38,7 @@ $ cd path/to/AB3DMOT
 $ pip3 install -r requirements.txt
 ```
 To install required dependencies on the virtual environment of the python, please run the following command at the root of this code:
+
 ```
 $ pip3 install venv
 $ python3 -m venv env
@@ -55,7 +56,8 @@ git clone https://github.com/xinshuoweng/Xinshuo_PyToolbox
 *2. Install dependency for the toolbox.*
 ~~~shell
 cd Xinshuo_PyToolbox
-pip3 install -r Xinshuo_PyToolbox/requirements.txt
+pip3 install -r requirements.txt
+cd ..
 ~~~
 
 Please add the path to the code to your PYTHONPATH in order to load the library appropriately. For example, if the code is located at /home/user/workspace/code/AB3DMOT, please add the following to your ~/.profile:
@@ -63,3 +65,10 @@ Please add the path to the code to your PYTHONPATH in order to load the library 
 $ export PYTHONPATH=${PYTHONPATH}:/home/user/workspace/code/AB3DMOT
 $ export PYTHONPATH=${PYTHONPATH}:/home/user/workspace/code/AB3DMOT/Xinshuo_PyToolbox
 ```
+Then update your configuration with
+```
+$ source ~/.profile
+$ cd path/to/AB3DMOT
+$ source env/bin/activate
+```
+You are now done with the installation!
