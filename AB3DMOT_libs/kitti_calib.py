@@ -37,6 +37,8 @@ class Calibration(object):
 
         rect/ref camera coord:
         right x, down y, front z
+
+        # modified from https://github.com/kuixu/kitti_object_vis/blob/master/kitti_util.py, MIT license
     '''
     def __init__(self, calib_filepath, from_video=False):
         if from_video:

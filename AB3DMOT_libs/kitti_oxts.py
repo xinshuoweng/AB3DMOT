@@ -40,6 +40,8 @@ def transform_from_rot_trans(R, t):
 def _poses_from_oxts(oxts_packets):
 
     """Helper method to compute SE(3) pose matrices from OXTS packets."""
+    # https://github.com/pratikac/kitti/blob/master/pykitti/raw.py
+        
     er = 6378137.  # earth radius (approx.) in meters
 
     # compute scale from first lat value
@@ -73,6 +75,7 @@ def _poses_from_oxts(oxts_packets):
 
 def load_oxts(oxts_file):
     """Load OXTS data from file."""
+    # https://github.com/pratikac/kitti/blob/master/pykitti/raw.py
 
     ext = fileparts(oxts_file)[-1]
     if ext == '.json':        # loading for nuScenes-to-KITTI data

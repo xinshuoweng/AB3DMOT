@@ -58,3 +58,8 @@ class KF(Filter):
 		""" compute the innovation matrix for association with mahalanobis distance
 		"""
 		return np.matmul(np.matmul(self.kf.H, self.kf.P), self.kf.H.T) + self.kf.R
+
+	def get_velocity(self):
+		# return the object velocity in the state
+
+		return self.kf.x[7:]

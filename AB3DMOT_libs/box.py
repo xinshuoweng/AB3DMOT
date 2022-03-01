@@ -1,5 +1,3 @@
-""" The defination and basic methods of bbox
-"""
 import numpy as np
 from numba import jit
 from copy import deepcopy
