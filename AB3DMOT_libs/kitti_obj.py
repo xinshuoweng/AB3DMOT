@@ -9,6 +9,7 @@ def read_label(label_filename):
     return objects
 
 class Object_3D(object):
+    # modified from https://github.com/kuixu/kitti_object_vis/blob/master/kitti_util.py, MIT license
     def __init__(self, label_file_line=None, obj_type=None, trunc=None, occ=None, alpha=None, \
         xmin=None, ymin=None, xmax=None, ymax=None, \
         h=None, w=None, l=None, x=None, y=None, z=None, ry=None, \

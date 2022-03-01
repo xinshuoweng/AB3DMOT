@@ -64,6 +64,11 @@ def compute_inter_2D(boxa_bottom, boxb_bottom):
 
 	_, I_2D = convex_hull_intersection(boxa_bottom, boxb_bottom)
 
+	# a slower version
+	# from shapely.geometry import Polygon
+	# reca, recb = Polygon(boxa_bottom), Polygon(boxb_bottom)
+	# I_2D = reca.intersection(recb).area
+
 	return I_2D
 
 def compute_height(box_a, box_b, inter=True):

@@ -63,13 +63,13 @@ class AB3DMOT(object):
 			else: assert False, 'error'
 		elif cfg.dataset == 'nuScenes':
 			if cfg.det_name == 'centerpoint':		# tmp
-				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.3, 1, 2
-				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',    1, 1, 2
-				elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
-				elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 3, 2
-				elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
-				elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.6, 3, 2
-				elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.7, 3, 2
+				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 2
+				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
+				elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 2
+				elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.3, 3, 2
+				elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d', 6, 1, 2
+				elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.7, 3, 2
+				elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.6, 3, 2
 				else: assert False, 'error'
 			# if cfg.det_name == 'centerpoint':		# tuned for CenterPoint detections
 			# 	if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
@@ -181,6 +181,7 @@ class AB3DMOT(object):
 			compensated = egomotion_compensation_ID(xyz, self.calib, ego_rot_imu, ego_xyz_imu, left, right)
 			trk_tmp.x, trk_tmp.y, trk_tmp.z = compensated[0]
 
+			# update compensated state in the Kalman filter
 			try:
 				self.trackers[index].kf.x[:3] = copy.copy(compensated).reshape((-1))
 			except:
@@ -231,6 +232,8 @@ class AB3DMOT(object):
 			if kf_tmp.id == self.debug_id:
 				print('\n before prediction')
 				print(kf_tmp.kf.x.reshape((-1)))
+				print('\n current velocity')
+				print(kf_tmp.get_velocity())
 			kf_tmp.kf.predict()
 			if kf_tmp.id == self.debug_id:
 				print('After prediction')
@@ -264,7 +267,7 @@ class AB3DMOT(object):
 				if trk.id == self.debug_id:
 					print('After ego-compoensation')
 					print(trk.kf.x.reshape((-1)))
-					print('measurement')
+					print('matched measurement')
 					print(bbox3d.reshape((-1)))
 					# print('uncertainty')
 					# print(trk.kf.P)
@@ -277,6 +280,8 @@ class AB3DMOT(object):
 				if trk.id == self.debug_id:
 					print('after matching')
 					print(trk.kf.x.reshape((-1)))
+					print('\n current velocity')
+					print(trk.get_velocity())
 
 				trk.kf.x[3] = self.within_range(trk.kf.x[3])
 				trk.info = info[d, :][0]
