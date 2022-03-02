@@ -78,7 +78,7 @@ class KittiConverter:
         :param nusc_version: nuScenes version to use.
         :param split: Dataset split to use.
         """
-        self.nusc_kitti_root = os.path.expanduser(nusc_kitti_root); mkdir_if_missing(self.nusc_kitti_root)
+        self.nusc_kitti_root = nusc_kitti_root; mkdir_if_missing(self.nusc_kitti_root)
         self.cam_name = cam_name
         self.lidar_name = lidar_name
         self.split = split
@@ -749,7 +749,7 @@ class KittiConverter:
         # path
         tmp_root_dir = os.path.join(self.nusc_kitti_root, 'tracking', self.split)
         results_dir = os.path.join(self.result_root, self.result_name, 'data_0')
-        corres_dir = os.path.join(tmp_root_dir, 'correspondence')
+        corres_dir = os.path.join(tmp_root_dir, '../produced/correspondence', self.split)
         calib_dir = os.path.join(tmp_root_dir, 'calib')
 
         # loop over all sequences

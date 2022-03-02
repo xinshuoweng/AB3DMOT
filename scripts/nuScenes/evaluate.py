@@ -1,6 +1,3 @@
-# nuScenes dev-kit.
-# Code written by Holger Caesar, Caglayan Dicle and Oscar Beijbom, 2019.
-
 import argparse
 import json
 import os
@@ -8,6 +5,7 @@ import time
 from typing import Tuple, List, Dict, Any
 import numpy as np
 
+# load nuScenes libraries
 from nuscenes import NuScenes
 from nuscenes.eval.common.config import config_factory
 from nuscenes.eval.common.loaders import load_prediction, load_gt, add_center_dist, filter_eval_boxes
@@ -18,6 +16,9 @@ from nuscenes.eval.tracking.data_classes import TrackingMetrics, TrackingMetricD
 from nuscenes.eval.tracking.loaders import create_tracks
 from nuscenes.eval.tracking.render import recall_metric_curve, summary_plot
 from nuscenes.eval.tracking.utils import print_final_metrics
+
+# load additional libraries
+from xinshuo_io import fileparts
 
 class TrackingEval:
     """
@@ -186,12 +187,12 @@ class TrackingEval:
             return os.path.join(self.plot_dir, name + '.pdf')
 
         # Plot a summary.
-        summary_plot(md_list, min_recall=self.cfg.min_recall, savepath=savepath('summary'))
+        summary_plot(cfg=self.cfg, md_list=md_list, savepath=savepath('summary'))
 
         # For each metric, plot all the classes in one diagram.
         for metric_name in LEGACY_METRICS:
-            recall_metric_curve(md_list, metric_name,
-                                self.cfg.min_recall, savepath=savepath('%s' % metric_name))
+            recall_metric_curve(cfg=self.cfg, md_list=md_list, metric_name=metric_name,
+                savepath=savepath('%s' % metric_name))
 
     def main(self, render_curves: bool = True) -> Dict[str, Any]:
         """
@@ -248,7 +249,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     result_path_ = os.path.expanduser(args.result_path)
-    output_dir_ = os.path.expanduser(args.output_dir)
+    # output_dir_ = os.path.expanduser(args.output_dir)
+    output_dir_ = fileparts(args.result_path)[0]
     eval_set_ = args.eval_set
     dataroot_ = args.dataroot
     version_ = args.version

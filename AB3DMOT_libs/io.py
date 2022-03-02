@@ -4,6 +4,8 @@
 import warnings, numpy as np, os
 from xinshuo_io import mkdir_if_missing, load_txt_file, save_txt_file
 
+################## loading
+
 def load_detection(file):
 
 	# load from raw file
@@ -29,6 +31,34 @@ def get_frame_det(dets_all, frame):
 
 	dets_frame = {'dets': dets, 'info': additional_info}
 	return dets_frame
+
+def load_highlight(file):
+	# load file with each line containing seq_id, frame_id, ID, error_type
+	# used to highlight errors in the video visualization, such as IDS, FP
+	# but cannot be used to highlight FRAG (next frame) and FN now
+
+	highlight, _ = load_txt_file(file)
+	data_dict = dict()
+	for data_tmp in highlight:
+		
+		# parse data in each line, seq_id, frame_id, ID, error_type
+		seq_id, frame_id, id_tmp, err_type = data_tmp.split(', ')
+		seq_id, frame_id, id_tmp = int(seq_id), int(frame_id), int(id_tmp)
+		
+		# create entry in the dictionary, with key -> seq, 
+		# val -> dict{key -> frame, value -> dict{key -> ID, value -> err}}
+		if seq_id not in data_dict.keys():
+			data_dict[seq_id] = dict()
+		if frame_id not in data_dict[seq_id]:
+			data_dict[seq_id][frame_id] = dict()
+		assert id_tmp not in data_dict[seq_id][frame_id], 'error, each ID should not be highlighted twice'
+
+		# assign the err_type to the ID
+		data_dict[seq_id][frame_id][id_tmp] = err_type
+		
+	return data_dict
+
+#################### saving
 
 def get_saving_dir(eval_dir_dict, seq_name, save_dir, num_hypo):
 
