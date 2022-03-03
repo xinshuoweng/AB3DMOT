@@ -13,6 +13,6 @@ score_threshold              : -10000     # filter out tracklet with low confide
 num_hypo                     : 1          # >1 to allow multi-hypothesis tracking
 
 # --------------- model.py
-ego_com                      : true      # turn on only slightly reduce speed but increase a lot for performance
+ego_com                      : false      # turn on only slightly reduce speed but increase a lot for performance
 vis                          : false       # only for debug or visualization purpose, will significantly reduce speed
 affi_pro                     : true
