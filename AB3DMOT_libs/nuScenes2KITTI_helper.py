@@ -115,7 +115,7 @@ def convert_anno_to_KITTI(nusc, anno_token, lidar_token, instance_token_list, \
 
     # Convert box to output string format.
     output = KittiDB.box_to_string(name=obj_name, box=box_cam_kitti, \
-        bbox_2d=bbox_2d, truncation=0.0, occlusion=0)
+        bbox_2d=bbox_2d, truncation=0.0, occlusion=0)           # no occlusion/truncation data is available
 
     return output, ID
 

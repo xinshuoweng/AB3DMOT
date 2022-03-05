@@ -289,7 +289,7 @@ class KittiConverter:
             # Use only the samples from the current sequence.
             sample_tokens = scene_to_samples(self.nusc, scene_name)
             tokens, instance_token_list, ego_pose_list = [], [], []
-            count = 0       # frame count in KITTI format
+            frame_id = 0       # frame count in KITTI format
             sys.stdout.write('processing %s, %d/%d\r' % (scene_name, count_scene+1, len(scene_names)))
             sys.stdout.flush()
 
@@ -298,7 +298,7 @@ class KittiConverter:
                 tokens.append(sample_token)
 
                 # write id to the split file
-                corres_file.write('%06d %s\n' % (count, sample_token))
+                corres_file.write('%06d %s\n' % (frame_id, sample_token))
 
                 # get sensor and transformation between KITTI
                 pose_record, cs_record_lid, cs_record_cam, filename_lid_full, filename_cam_full = \
@@ -312,8 +312,8 @@ class KittiConverter:
                 save_calib_file(kitti_transforms, calib_path)
 
                 # save sensor data
-                save_image(self.nusc, filename_cam_full, image_dir, count)
-                save_lidar(self.nusc, filename_lid_full, lidar_dir, count)
+                save_image(self.nusc, filename_cam_full, image_dir, frame_id)
+                save_lidar(self.nusc, filename_lid_full, lidar_dir, frame_id)
 
                 # compute oxts 
                 ego_pose = transform_matrix(pose_record['translation'], Quaternion(pose_record['rotation']), inverse=False)
@@ -322,7 +322,7 @@ class KittiConverter:
                 # Write label file at this frame
                 sample = self.nusc.get('sample', sample_token)
                 sample_annotation_tokens = sample['anns']
-                label_obj_path = os.path.join(label_obj_folder, '%06d.txt' % count)
+                label_obj_path = os.path.join(label_obj_folder, '%06d.txt' % frame_id)
                 with open(label_obj_path, "w") as label_obj_file:
                     
                     # loop through each object annotation at this frame
@@ -331,9 +331,9 @@ class KittiConverter:
                             instance_token_list, velo_to_cam_trans, velo_to_cam_rot, r0_rect, p_left_kitti)
                         if output is None: continue 
                         label_obj_file.write(output + '\n')
-                        label_file.write('%d %d %s\n' % (count, ID, output))
+                        label_file.write('%d %d %s\n' % (frame_id, ID, output))
 
-                count += 1
+                frame_id += 1
 
             count_scene += 1
             evaluate_file.write('%s empty 000000 %06d\n' % (scene_name, len(sample_tokens)))

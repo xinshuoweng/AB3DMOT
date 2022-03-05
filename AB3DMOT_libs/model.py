@@ -50,27 +50,18 @@ class AB3DMOT(object):
 				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 4 		
 				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
 				else: assert False, 'error'
-			# elif cfg.det_name == 'pointrcnn':			# tuned for Megvii detections
-			# 	if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'giou_3d', -0.2, 3, 2
-			# 	elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 4 		
-			# 	elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
-			# 	else: assert False, 'error'
-			elif cfg.det_name == 'pointrcnn':			# original parameters for PointRCNN detections
+			elif cfg.det_name == 'pointrcnn':			# tuned for Megvii detections
+				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'giou_3d', -0.2, 3, 2
+				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 4 		
+				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
+				else: assert False, 'error'
+			elif cfg.det_name == 'original':			# original parameters for PointRCNN detections
 				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 6, 3, 2
 				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 1, 3, 2		
 				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 6, 3, 2
 				else: assert False, 'error'
 			else: assert False, 'error'
 		elif cfg.dataset == 'nuScenes':
-			# if cfg.det_name == 'centerpoint':		# tmp
-			# 	if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', 8, 1, 2
-			# 	elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', 3, 1, 2
-			# 	elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d', 8, 1, 2
-			# 	elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', 8, 3, 2
-			# 	elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 2
-			# 	elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', 6, 3, 2
-			# 	elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', 6, 3, 2
-			# 	else: assert False, 'error'		
 			if cfg.det_name == 'centerpoint':		# tuned for CenterPoint detections
 				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 2
 				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
@@ -80,14 +71,6 @@ class AB3DMOT(object):
 				elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.7, 3, 2
 				elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',    6, 3, 2
 				else: assert False, 'error'
-				# # tuned for Megvii detections
-				# if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 1, 2
-				# elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 1, 1, 2
-				# elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 4, 1, 2
-				# elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 3, 2
-				# elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 1, 2
-				# elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 6, 3, 2
-				# elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'm_dis', 2, 3, 2
 			elif cfg.det_name == 'megvii':			# tuned for Megvii detections
 				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
 				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',    2, 1, 2
