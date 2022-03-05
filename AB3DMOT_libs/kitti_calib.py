@@ -10,6 +10,16 @@ def inverse_rigid_trans(Tr):
     inv_Tr[0:3,3] = np.dot(-np.transpose(Tr[0:3,0:3]), Tr[0:3,3])
     return inv_Tr
 
+def save_calib_file(transform, save_path):
+
+    with open(save_path, "w") as calib_file:
+        for (key, val) in transform.items():
+            val = val.flatten()
+            val_str = '%.12e' % val[0]
+            for v in val[1:]:
+                val_str += ' %.12e' % v
+            calib_file.write('%s: %s\n' % (key, val_str))
+
 class Calibration(object):
     ''' Calibration matrices and utils
         3d XYZ in <label>.txt are in rect camera coord.
