@@ -1,5 +1,22 @@
 # nuScenes Inference
 
+## Additional Dependencies:
+
+To run experiments on nuScenes, the following packages need to be installed:
+1. nuscenes-devkit==1.1.9
+2. motmetrics<=1.1.3
+3. pandas>=0.24
+
+To install required dependencies on the virtual environment of the python, please run the following commands:
+
+```
+$ cd path/to/AB3DMOT
+$ source env/bin/activate
+$ cd scripts/nuScenes
+$ pip3 install -r requirements.txt
+$ cd ../../
+```
+
 ## Dataset Preparation
 
 * Please download the official [nuScenes full dataset (v1.0)](https://www.nuscenes.org/download), then uncompress, and put the data under "./data/nuScenes/data" folder (either hard copy or soft symbolic link) in the following structure:
@@ -115,6 +132,15 @@ Then, compress the result file at "./results/nuScenes/megvii_test_H1/results_tes
  *Trailer*    | 0.513  | 0.437  | 0.595  | 10  | 19   | 220   | 1214   
  *Truck*      | 0.531  | 0.392  | 0.426  | 23  | 32   | 2120  | 3109   
  *Overall*    | 0.569  | 0.468  | 0.369  | 948 | 681  | 17886 | 29190
+
+### Quick 3D MOT Evaluation on the nuScenes Tracking Validation Set (Unofficial)
+
+The above evaluation process follows the same procesdure as the official nuScenes tracking evaluation, but the scripts take a long time to run. So we also provide a quick evaluation script that is adapted from KITTI evaluation. To proceed, simply run the following commands:
+```
+$ python3 scripts/nuScenes/evaluate_quick.py megvii_val_H1 1 val
+```
+
+The results will not be the same as above because there are differences in the implementation of the evaluation code but we do observe similar trend when using two scripts (i.e., when our method is clearly improved and get higher numbers in one evaluation code, we also obtain higher numbers when using the other evaluation code).
 
 ## Visualization
 
