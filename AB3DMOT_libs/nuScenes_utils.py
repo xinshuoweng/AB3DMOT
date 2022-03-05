@@ -20,7 +20,7 @@ def get_min_max_score(results_dir):
 
     return min_score, max_score
 
-def _split_to_samples(nusc, split_logs: List[str]) -> List[str]:
+def split_to_samples(nusc, split_logs: List[str]) -> List[str]:
     """
     Convenience function to get the samples in a particular split.
     :param split_logs: A list of the log names in this split.
@@ -38,7 +38,7 @@ def _split_to_samples(nusc, split_logs: List[str]) -> List[str]:
 
     return samples
 
-def _scene_to_samples(nusc, scene_name: str) -> List[str]:
+def scene_to_samples(nusc, scene_name: str) -> List[str]:
     # obtain the samples in the order from a given scene
 
     scene_token = nusc.field2token('scene', 'name', scene_name)[0]
@@ -78,7 +78,7 @@ def create_nuScenes_box(obj: Object_3D):
 
 ###################### nuScenes coordinate transform
 
-def get_sensor_param(nusc, sample_token, lidar_name='LIDAR_TOP', cam_name=None):
+def get_sensor_param(nusc, sample_token, lidar_name='LIDAR_TOP', cam_name=None, output_file=False):
     # get the sensor parameters for box transformation later
     # cs_record:    transformation between lidar sensor and ego coordinate
     # pose_record:  transformation between ego and world coordinate
@@ -87,19 +87,26 @@ def get_sensor_param(nusc, sample_token, lidar_name='LIDAR_TOP', cam_name=None):
 
     # get lidar sensor parameter
     lidar_token = sample['data'][lidar_name]
-    sd_record = nusc.get('sample_data', lidar_token)
-    cs_record = nusc.get('calibrated_sensor', sd_record['calibrated_sensor_token'])
-    pose_record = nusc.get('ego_pose', sd_record['ego_pose_token'])
+    sd_record_lid = nusc.get('sample_data', lidar_token)
+    cs_record_lid = nusc.get('calibrated_sensor', sd_record_lid['calibrated_sensor_token'])
+    pose_record = nusc.get('ego_pose', sd_record_lid['ego_pose_token'])
+    # pose_record of lidar and camera is very close, although not the same
 
     if cam_name is None:
-        return cs_record, pose_record
+        return pose_record, cs_record_lid
     else:
         # get camera sensor
         cam_token = sample['data'][cam_name]
         sd_record_cam = nusc.get('sample_data', cam_token)
         cs_record_cam = nusc.get('calibrated_sensor', sd_record_cam['calibrated_sensor_token'])
 
-        return cs_record, pose_record, cs_record_cam
+        # output the original file name/path
+        if output_file:
+            filename_cam_full = sd_record_cam['filename']
+            filename_lid_full = sd_record_lid['filename']
+            return pose_record, cs_record_lid, cs_record_cam, filename_lid_full, filename_cam_full
+        else:
+            return pose_record, cs_record_lid, cs_record_cam
 
 def nuScenes_lidar2world(box, cs_record=None, pose_record=None, \
     sample_token=None, nusc=None, lidar_name='LIDAR_TOP'):

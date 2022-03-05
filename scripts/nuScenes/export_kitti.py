@@ -39,26 +39,23 @@ See https://www.nuscenes.org/object-detection for more information on the nuScen
 
 import os, sys, json, numpy as np, fire
 from typing import List, Dict, Any
-from collections import OrderedDict
 from shutil import copyfile
 from pyquaternion import Quaternion
-from PIL import Image
 from xinshuo_io import mkdir_if_missing, load_list_from_folder, fileparts
 
 # load nuScenes libraries
 from nuscenes import NuScenes
-from nuscenes.utils.geometry_utils import BoxVisibility
-from nuscenes.utils.data_classes import LidarPointCloud, Box
+from nuscenes.utils.geometry_utils import transform_matrix
+from nuscenes.utils.data_classes import Box
 from nuscenes.utils.splits import create_splits_logs, create_splits_scenes
-from nuscenes.utils.kitti import KittiDB
-from nuscenes.eval.detection.utils import category_to_detection_name
 from AB3DMOT_libs.nuScenes2KITTI_helper import load_correspondence, load_correspondence_inverse
 from AB3DMOT_libs.nuScenes2KITTI_helper import kitti_cam2nuScenes_lidar, nuScenes_transform2KITTI
-from AB3DMOT_libs.nuScenes_utils import nuScenes_lidar2world, nuScenes_world2lidar, get_sensor_param
+from AB3DMOT_libs.nuScenes2KITTI_helper import create_KITTI_transform, convert_anno_to_KITTI, save_image, save_lidar
+from AB3DMOT_libs.nuScenes_utils import nuScenes_lidar2world, nuScenes_world2lidar, get_sensor_param, split_to_samples, scene_to_samples
 from AB3DMOT_libs.nuScenes_utils import box_to_trk_sample_result, create_nuScenes_box, box_to_det_sample_result
 
 # load KITTI libraries
-from AB3DMOT_libs.kitti_calib import Calibration
+from AB3DMOT_libs.kitti_calib import Calibration, save_calib_file
 from AB3DMOT_libs.kitti_trk import Tracklet_3D
 
 class KittiConverter:
@@ -91,7 +88,7 @@ class KittiConverter:
         # Select subset of the data to look at.
         self.nusc = NuScenes(version=self.nusc_version, dataroot=data_root, verbose=True)
 
-    def nuscenes_gt2kitti_obj(self) -> None:
+    def nuscenes_gt2kitti_obj(self):
         """
         Converts nuScenes GT annotations to KITTI object detection format.
         """
@@ -115,7 +112,7 @@ class KittiConverter:
         corres_file = os.path.join(self.nusc_kitti_root, 'object', self.split, 'correspondence.txt'); corres_file = open(corres_file, 'w')
 
         # Use only the samples from the current split.
-        sample_tokens = self._split_to_samples(split_logs)
+        sample_tokens = split_to_samples(self.nusc, split_logs)
         num_samples = len(sample_tokens)
 
         tokens = []
@@ -258,205 +255,96 @@ class KittiConverter:
 
         split_file.close()
 
-    def nuscenes_gt2kitti_trk(self) -> None:
-        """
-        Converts nuScenes GT annotations to KITTI tracking format.
-        """
-        kitti_to_nu_lidar = Quaternion(axis=(0, 0, 1), angle=np.pi / 2)
-        kitti_to_nu_lidar_inv = kitti_to_nu_lidar.inverse
-        imsize = (1600, 900)
-        token_idx = 0  # Start tokens from 0.
-
+    def nuscenes_gt2kitti_trk(self):
+        # Converts nuScenes GT annotations to KITTI tracking format.
+        
         # Create output folders.
-        split_file = os.path.join(self.nusc_kitti_root, 'tracking', 'split', '%s.txt' % self.split); mkdir_if_missing(split_file)
-        split_file = open(split_file, 'w')
+        split_file = os.path.join(self.nusc_kitti_root, 'tracking/produced/split', '%s.txt' % self.split)
+        mkdir_if_missing(split_file); split_file = open(split_file, 'w')
+        corres_folder = os.path.join(self.nusc_kitti_root, 'tracking/produced/correspondence', self.split); mkdir_if_missing(corres_folder)
         calib_folder  = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'calib'); mkdir_if_missing(calib_folder)
-        corres_folder = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'correspondence'); mkdir_if_missing(corres_folder)
         label_folder  = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'label_02'); mkdir_if_missing(label_folder)
         oxts_folder   = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'oxts'); mkdir_if_missing(oxts_folder)
         evaluate_file = os.path.join(self.nusc_kitti_root, 'tracking', 'evaluate_tracking.seqmap.%s' % self.split)
         evaluate_file = open(evaluate_file, 'w')
 
-        # Get assignment of scenes to splits.
+        # go through every scene
         scene_splits = create_splits_scenes(verbose=False)
         scene_names = scene_splits[self.split]
         count_scene = 0
         for scene_name in scene_names:
-            label_obj_folder = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'label_2_object', scene_name)
-            image_folder = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'image_02', scene_name)
-            lidar_folder = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'velodyne', scene_name)
-            for folder in [label_obj_folder, image_folder, lidar_folder]: mkdir_if_missing(folder)
 
+            # create output folders that have subfolders at every scene
+            label_obj_folder = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'label_2_object', scene_name)
+            image_dir = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'image_02', scene_name)
+            lidar_dir = os.path.join(self.nusc_kitti_root, 'tracking', self.split, 'velodyne', scene_name)
+            for folder in [label_obj_folder, image_dir, lidar_dir]: mkdir_if_missing(folder)
+
+            # create output files
             corres_file = os.path.join(corres_folder, scene_name+'.txt'); corres_file = open(corres_file, 'w')
             label_file = os.path.join(label_folder, scene_name+'.txt'); label_file = open(label_file, 'w')
             oxts_file = os.path.join(oxts_folder, scene_name+'.json')
             split_file.write('%s\n' % scene_name)
 
             # Use only the samples from the current sequence.
-            sample_tokens = self._scene_to_samples(scene_name)
-            num_samples = len(sample_tokens)
-            tokens = []
-            instance_token_list = []
-            ego_pose_list = []
-            count = 0
+            sample_tokens = scene_to_samples(self.nusc, scene_name)
+            tokens, instance_token_list, ego_pose_list = [], [], []
+            count = 0       # frame count in KITTI format
             sys.stdout.write('processing %s, %d/%d\r' % (scene_name, count_scene+1, len(scene_names)))
             sys.stdout.flush()
+
+            # go through each frame
             for sample_token in sample_tokens:
+                tokens.append(sample_token)
+
                 # write id to the split file
                 corres_file.write('%06d %s\n' % (count, sample_token))
 
-                # Get sample data.
-                sample = self.nusc.get('sample', sample_token)
-                sample_annotation_tokens = sample['anns']
-                cam_front_token = sample['data'][self.cam_name]
-                lidar_token = sample['data'][self.lidar_name]
+                # get sensor and transformation between KITTI
+                pose_record, cs_record_lid, cs_record_cam, filename_lid_full, filename_cam_full = \
+                    get_sensor_param(self.nusc, sample_token, cam_name=self.cam_name, output_file=True)
+                velo_to_cam_trans, velo_to_cam_rot, r0_rect, p_left_kitti = \
+                    nuScenes_transform2KITTI(cs_record_lid, cs_record_cam)
 
-                # Retrieve sensor records.
-                sd_record_cam = self.nusc.get('sample_data', cam_front_token)
-                sd_record_lid = self.nusc.get('sample_data', lidar_token)
-                cs_record_cam = self.nusc.get('calibrated_sensor', sd_record_cam['calibrated_sensor_token'])
-                cs_record_lid = self.nusc.get('calibrated_sensor', sd_record_lid['calibrated_sensor_token'])
-                ego_pose = self.nusc.get('ego_pose', sd_record_cam['ego_pose_token'])
+                # save calib
+                calib_path = os.path.join(calib_folder, '%s.txt' % scene_name)
+                kitti_transforms = create_KITTI_transform(velo_to_cam_trans, velo_to_cam_rot, r0_rect, p_left_kitti)
+                save_calib_file(kitti_transforms, calib_path)
 
-                # Combine transformations and convert to KITTI format.
-                # Note: cam uses same conventions in KITTI and nuScenes.
-                lid_to_ego = transform_matrix(cs_record_lid['translation'], Quaternion(cs_record_lid['rotation']), inverse=False)
-                ego_to_cam = transform_matrix(cs_record_cam['translation'], Quaternion(cs_record_cam['rotation']), inverse=True)
-                velo_to_cam = np.dot(ego_to_cam, lid_to_ego)
-                ego_pose = transform_matrix(ego_pose['translation'], Quaternion(ego_pose['rotation']), inverse=False)
+                # save sensor data
+                save_image(self.nusc, filename_cam_full, image_dir, count)
+                save_lidar(self.nusc, filename_lid_full, lidar_dir, count)
+
+                # compute oxts 
+                ego_pose = transform_matrix(pose_record['translation'], Quaternion(pose_record['rotation']), inverse=False)
                 ego_pose_list.append(ego_pose)
 
-                # Convert from KITTI to nuScenes LIDAR coordinates, where we apply velo_to_cam.
-                velo_to_cam_kitti = np.dot(velo_to_cam, kitti_to_nu_lidar.transformation_matrix)
-                imu_to_velo_kitti = np.zeros((3, 4))  # Dummy values.
-                imu_to_velo_kitti[0, 0] = imu_to_velo_kitti[1, 1] = imu_to_velo_kitti[2, 2] = 1
-                r0_rect = Quaternion(axis=[1, 0, 0], angle=0)  # Dummy values.
-
-                # Projection matrix.
-                p_left_kitti = np.zeros((3, 4))
-                p_left_kitti[:3, :3] = cs_record_cam['camera_intrinsic']  # Cameras are always rectified.
-
-                # Create KITTI style transforms.
-                velo_to_cam_rot = velo_to_cam_kitti[:3, :3]
-                velo_to_cam_trans = velo_to_cam_kitti[:3, 3]
-
-                # Check that the rotation has the same format as in KITTI.
-                assert (velo_to_cam_rot.round(0) == np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]])).all()
-                assert (velo_to_cam_trans[1:3] < 0).all()
-
-                # Retrieve the token from the lidar.
-                # Note that this may be confusing as the filename of the camera will include the timestamp of the lidar,
-                # not the camera.
-                filename_cam_full = sd_record_cam['filename']
-                filename_lid_full = sd_record_lid['filename']
-                # token = '%06d' % token_idx # Alternative to use KITTI names.
-                token_idx += 1
-
-                # Convert image (jpg to png).
-                src_im_path = os.path.join(self.nusc.dataroot, filename_cam_full)
-                dst_im_path = os.path.join(image_folder, '%06d.png' % count)
-                if not os.path.exists(dst_im_path):
-                    im = Image.open(src_im_path)
-                    im.save(dst_im_path, "PNG")
-
-                # Convert lidar.
-                # Note that we are only using a single sweep, instead of the commonly used n sweeps.
-                src_lid_path = os.path.join(self.nusc.dataroot, filename_lid_full)
-                dst_lid_path = os.path.join(lidar_folder, '%06d.bin' % count)
-                assert not dst_lid_path.endswith('.pcd.bin')
-                pcl = LidarPointCloud.from_file(src_lid_path)
-                pcl.rotate(kitti_to_nu_lidar_inv.rotation_matrix)  # In KITTI lidar frame.
-                with open(dst_lid_path, "w") as lid_file:
-                    pcl.points.T.tofile(lid_file)
-
-                # Add to tokens.
-                tokens.append(sample_token)
-
-                # Create calibration file.
-                kitti_transforms = OrderedDict()
-                kitti_transforms['P0'] = np.zeros((3, 4))  # Dummy values.
-                kitti_transforms['P1'] = np.zeros((3, 4))  # Dummy values.
-                kitti_transforms['P2'] = p_left_kitti  # Left camera transform.
-                kitti_transforms['P3'] = np.zeros((3, 4))  # Dummy values.
-                kitti_transforms['R0_rect'] = r0_rect.rotation_matrix  # Cameras are already rectified.
-                kitti_transforms['Tr_velo_to_cam'] = np.hstack((velo_to_cam_rot, velo_to_cam_trans.reshape(3, 1)))
-                kitti_transforms['Tr_imu_to_velo'] = imu_to_velo_kitti
-                calib_path = os.path.join(calib_folder, '%s.txt' % scene_name)
-                with open(calib_path, "w") as calib_file:
-                    for (key, val) in kitti_transforms.items():
-                        val = val.flatten()
-                        val_str = '%.12e' % val[0]
-                        for v in val[1:]:
-                            val_str += ' %.12e' % v
-                        calib_file.write('%s: %s\n' % (key, val_str))
-
-                # Write label file.
+                # Write label file at this frame
+                sample = self.nusc.get('sample', sample_token)
+                sample_annotation_tokens = sample['anns']
                 label_obj_path = os.path.join(label_obj_folder, '%06d.txt' % count)
                 with open(label_obj_path, "w") as label_obj_file:
-                    for sample_annotation_token in sample_annotation_tokens:
-                        sample_annotation = self.nusc.get('sample_annotation', sample_annotation_token)
-
-                        # add instance token to the list if not yet
-                        instance_token = sample_annotation['instance_token']
-                        if instance_token in instance_token_list:
-                            ID = instance_token_list.index(instance_token)        # 0-indexed ID
-                        else:
-                            ID = len(instance_token_list)
-                            instance_token_list.append(instance_token)
-
-                        # Get box in LIDAR frame.
-                        _, box_lidar_nusc, _ = self.nusc.get_sample_data(lidar_token, box_vis_level=BoxVisibility.NONE,
-                                                                         selected_anntokens=[sample_annotation_token])
-                        box_lidar_nusc = box_lidar_nusc[0]
-
-                        # Truncated: Set all objects to 0 which means untruncated.
-                        truncated = 0.0
-
-                        # Occluded: Set all objects to full visibility as this information is not available in nuScenes.
-                        occluded = 0
-
-                        # Convert nuScenes category to nuScenes detection challenge category.
-                        detection_name = category_to_detection_name(sample_annotation['category_name'])
-
-                        # Skip categories that are not part of the nuScenes detection challenge.
-                        if detection_name is None: continue
-                        detection_name = detection_name.capitalize()
-
-                        # Convert from nuScenes to KITTI box format.
-                        box_cam_kitti = KittiDB.box_nuscenes_to_kitti(
-                            box_lidar_nusc, Quaternion(matrix=velo_to_cam_rot), velo_to_cam_trans, r0_rect)
-
-                        # Project 3d box to 2d box in image, ignore box if it does not fall inside.
-                        bbox_2d = KittiDB.project_kitti_box_to_image(box_cam_kitti, p_left_kitti, imsize=imsize)
-                        if bbox_2d is None:
-                            bbox_2d = (-1, -1, -1, -1)
-                            # continue
-
-                        # Set dummy score so we can use this file as result.
-                        box_cam_kitti.score = 1.0
-
-                        # Convert box to output string format.
-                        output = KittiDB.box_to_string(name=detection_name, box=box_cam_kitti, bbox_2d=bbox_2d,
-                                                       truncation=truncated, occlusion=occluded)
-
-                        # Write to disk.
+                    
+                    # loop through each object annotation at this frame
+                    for anno_token in sample_annotation_tokens:
+                        output, ID = convert_anno_to_KITTI(self.nusc, anno_token, sample['data'][self.lidar_name], \
+                            instance_token_list, velo_to_cam_trans, velo_to_cam_rot, r0_rect, p_left_kitti)
+                        if output is None: continue 
                         label_obj_file.write(output + '\n')
                         label_file.write('%d %d %s\n' % (count, ID, output))
 
                 count += 1
 
             count_scene += 1
-            evaluate_file.write('%s empty 000000 %06d\n' % (scene_name, num_samples))
-            corres_file.close()
-            label_file.close()
+            evaluate_file.write('%s empty 000000 %06d\n' % (scene_name, len(sample_tokens)))
+            corres_file.close(); label_file.close()
 
             # save ego pose
             ego_pose_list = np.stack(ego_pose_list, axis=0).tolist()
             with open(oxts_file, 'w') as f:
                 json.dump(ego_pose_list, f)
 
-        split_file.close()
-        evaluate_file.close()
+        split_file.close(); evaluate_file.close()
 
     def nuscenes_obj_result2kitti(self):
         # convert the detection results in NuScenes format to KITTI object format
@@ -479,7 +367,7 @@ class KittiConverter:
             for sample_token, dets in data['results'].items():
                 
                 # get sensor and transformation
-                cs_record_lid, pose_record, cs_record_cam = get_sensor_param(self.nusc, sample_token, cam_name=self.cam_name)
+                pose_record, cs_record_lid, cs_record_cam = get_sensor_param(self.nusc, sample_token, cam_name=self.cam_name)
                 velo_to_cam_trans, velo_to_cam_rot, r0_rect, p_left_kitti = \
                     nuScenes_transform2KITTI(cs_record_lid, cs_record_cam)
 
@@ -685,7 +573,7 @@ class KittiConverter:
         split_logs = create_splits_logs(self.split, self.nusc)
 
         # Use only the samples from the current split.
-        sample_tokens = self._split_to_samples(split_logs)
+        sample_tokens = split_to_samples(self.nusc, split_logs)
         num_samples = len(sample_tokens)
 
         # get the correspondence between KITTI and NuScenes
@@ -698,7 +586,7 @@ class KittiConverter:
             sys.stdout.write('converting %d/%d\r' % (count, num_samples))
             sys.stdout.flush()
 
-            cs_record, pose_record = get_sensor_param(self.nusc, sample_token)
+            pose_record, cs_record = get_sensor_param(self.nusc, sample_token)
 
             # Get the KITTI boxes we just generated in LIDAR frame.
             sample_token_kitti = corr_dict[sample_token]
@@ -779,7 +667,7 @@ class KittiConverter:
                 # retrieve nuScenes data at this frame
                 frame_index = '%06d' % frame
                 sample_token = corr_dict[frame_index]
-                cs_record, pose_record = get_sensor_param(self.nusc, sample_token)
+                pose_record, cs_record = get_sensor_param(self.nusc, sample_token)
 
                 # loop over every tracks
                 for id_tmp, obj in frame_data.items():

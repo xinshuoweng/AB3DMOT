@@ -74,7 +74,14 @@ def vis_obj(box, img, calib, hw, color_tmp=None, str_vis=None, thickness=4, id_h
 		img = cv2.circle(img, center, radius, (255, 0, 0), 4)		
 
 		# draw error message
-		img = cv2.putText(img, err_type, (center[0]-radius, center[1]-radius), cv2.FONT_HERSHEY_TRIPLEX, 1, color=(255, 0, 0)) 
+		pos_x, pos_y = center[0] - radius, center[1] - radius - 10
+		font = cv2.FONT_HERSHEY_TRIPLEX
+		font_scale = 1
+		font_thickness = 2
+		text_size, _ = cv2.getTextSize(err_type, font, font_scale, font_thickness)
+		text_w, text_h = text_size
+		cv2.rectangle(img, (pos_x, pos_y - text_h - 5), (pos_x + text_w, pos_y + 5), (255, 255, 255), -1) 		# add white background
+		img = cv2.putText(img, err_type, (pos_x, pos_y), font, font_scale, (255, 0, 0), font_thickness) 
 
 	return img
 
