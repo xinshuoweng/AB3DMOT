@@ -86,7 +86,7 @@ def vis_obj(box, img, calib, hw, color_tmp=None, str_vis=None, thickness=4, id_h
 	return img
 
 def vis_image_with_obj(img, obj_res, obj_gt, calib, hw, save_path, h_thres=0, \
-	color_type='det', id_hl=None, repeat=60):
+	color_type='trk', id_hl=None, repeat=60):
 	# obj_res, obj_gt, a list of object3D class instances
 	# h_thres: height threshold for filtering objects
 	# id_hl: ID to be highlighted, color_type: ['det', 'trk'], trk means different color for each one

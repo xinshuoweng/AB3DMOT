@@ -133,7 +133,9 @@ def nuScenes_lidar2world(box, cs_record=None, pose_record=None, \
 def nuScenes_world2lidar(box, cs_record=None, pose_record=None, \
     sample_token=None, nusc=None, lidar_name='LIDAR_TOP'):
     """
-    Transform from nuScenes lidar frame to nuScenes world coordinate.
+    Transform from nuScenes wolrd coordinate to lidar frame
+    nuScenes world: x, y, z -> width, length, height or left, front, up
+    also, box is the true center, not the bottom center
     """
 
     box = copy.deepcopy(box)

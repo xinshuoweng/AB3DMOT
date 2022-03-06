@@ -16,3 +16,4 @@ num_hypo                     : 1          # >1 to allow multi-hypothesis trackin
 ego_com                      : true      # turn on only slightly reduce speed but increase a lot for performance
 vis                          : false       # only for debug or visualization purpose, will significantly reduce speed
 affi_pro                     : true
+nms                          : true      # add NMS to detection filtering

@@ -19,6 +19,10 @@ class Box3D:
         return 'x: {}, y: {}, z: {}, heading: {}, length: {}, width: {}, height: {}, score: {}'.format(
             self.x, self.y, self.z, self.ry, self.l, self.w, self.h, self.s)
     
+    def clear_score(self):
+        self.s = None
+        return self
+
     @classmethod
     def bbox2dict(cls, bbox):
         return {

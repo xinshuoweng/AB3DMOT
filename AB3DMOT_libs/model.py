@@ -2,6 +2,7 @@
 # email: xinshuo.weng@gmail.com
 
 import numpy as np, os, copy, math
+from external.nms import nms
 from AB3DMOT_libs.box import Box3D
 from AB3DMOT_libs.matching import data_association
 from AB3DMOT_libs.kalman_filter import KF
@@ -27,23 +28,26 @@ class AB3DMOT(object):
 		self.frame_count = 0
 		self.ID_count = [ID_init]
 		self.id_now_output = []
+		self.filter_count = 0 				# number of objects filtered by NMS
 
 		# config
 		self.cat = cat
 		self.ego_com = cfg.ego_com 			# ego motion compensation
 		self.calib = calib
 		self.oxts = oxts
+		self.nms = cfg.nms 					# add NMS for detection filtering
 		self.affi_process = cfg.affi_pro	# post-processing affinity
-		self.get_param(cfg, cat)
+		self.get_optimal_param(cfg, cat) 	# optimal parameters after extensive ablation experiments
 		self.print_param()
 
 		# debug
 		# self.debug_id = 2
 		self.debug_id = None
 
-	def get_param(self, cfg, cat):
+	def get_optimal_param(self, cfg, cat):
 		# get parameters for each dataset
 
+		# get matching and tracking management parameter
 		if cfg.dataset == 'KITTI':
 			if cfg.det_name == 'pvrcnn':				# tuned for PV-RCNN detections
 				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'giou_3d', -0.2, 3, 2
@@ -51,51 +55,51 @@ class AB3DMOT(object):
 				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
 				else: assert False, 'error'
 			elif cfg.det_name == 'pointrcnn':			# tuned for Megvii detections
-				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'giou_3d', -0.2, 3, 2
-				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 4 		
-				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 2, 3, 4
+				if cat == 'Car': 			algm, metric, thres, min_hits, max_age, nms = 'hungar', 'giou_3d', -0.2, 3, 2, None
+				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age, nms = 'greedy', 'giou_3d', -0.4, 1, 4, None 		
+				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age, nms = 'hungar', 'dist_3d', 2, 3, 4, None
 				else: assert False, 'error'
 			elif cfg.det_name == 'original':			# original parameters for PointRCNN detections
-				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 6, 3, 2
-				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 1, 3, 2		
-				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age = 'hungar', 'dist_3d', 6, 3, 2
+				if cat == 'Car': 			algm, metric, thres, min_hits, max_age, nms = 'hungar', 'dist_3d', 6, 3, 2, None
+				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age, nms = 'hungar', 'dist_3d', 1, 3, 2, None		
+				elif cat == 'Cyclist': 		algm, metric, thres, min_hits, max_age, nms = 'hungar', 'dist_3d', 6, 3, 2, None
 				else: assert False, 'error'
 			else: assert False, 'error'
 		elif cfg.dataset == 'nuScenes':
 			if cfg.det_name == 'centerpoint':		# tuned for CenterPoint detections
-				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 2
-				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
-				elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 2
-				elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.3, 3, 2
-				elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.4, 1, 2
-				elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.7, 3, 2
-				elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',    6, 3, 2
+				if cat == 'Car': 			algm, metric, thres, min_hits, max_age, nms = 'greedy', 'giou_3d', -0.4, 1, 2, 0.05
+				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age, nms = 'greedy', 'giou_3d', -0.5, 1, 2, 0.05
+				elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age, nms = 'greedy', 'giou_3d', -0.4, 1, 2, 0.1
+				elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age, nms = 'greedy', 'giou_3d', -0.3, 3, 2, 0.05
+				elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age, nms = 'greedy', 'giou_3d', -0.4, 1, 2, None
+				elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age, nms = 'greedy', 'giou_3d', -0.7, 3, 2, None
+				elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age, nms = 'greedy', 'dist_3d',    6, 3, 2, None
 				else: assert False, 'error'
 			elif cfg.det_name == 'megvii':			# tuned for Megvii detections
-				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2
-				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',    2, 1, 2
-				elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 1, 2
-				elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 3, 2
-				elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 1, 2
-				elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.8, 3, 2
-				elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.6, 3, 2
+				if cat == 'Car': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.5, 1, 2, None
+				elif cat == 'Pedestrian': 	algm, metric, thres, min_hits, max_age = 'greedy', 'dist_3d',    2, 1, 2, None
+				elif cat == 'Truck': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 1, 2, 0.1
+				elif cat == 'Trailer': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 3, 2, None
+				elif cat == 'Bus': 			algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.2, 1, 2, None
+				elif cat == 'Motorcycle':	algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.8, 3, 2, None
+				elif cat == 'Bicycle': 		algm, metric, thres, min_hits, max_age = 'greedy', 'giou_3d', -0.6, 3, 2, None
 				else: assert False, 'error'
 			elif cfg.det_name == 'original':		# original parameters for Megvii detections
-				if cat == 'Car': 			metric, thres, min_hits, max_age = 'dist', 10, 3, 2
-				elif cat == 'Pedestrian': 	metric, thres, min_hits, max_age = 'dist',  6, 3, 2	
-				elif cat == 'Bicycle': 		metric, thres, min_hits, max_age = 'dist',  6, 3, 2
-				elif cat == 'Motorcycle':	metric, thres, min_hits, max_age = 'dist', 10, 3, 2
-				elif cat == 'Bus': 			metric, thres, min_hits, max_age = 'dist', 10, 3, 2
-				elif cat == 'Trailer': 		metric, thres, min_hits, max_age = 'dist', 10, 3, 2
-				elif cat == 'Truck': 		metric, thres, min_hits, max_age = 'dist', 10, 3, 2
+				if cat == 'Car': 			metric, thres, min_hits, max_age, nms = 'dist', 10, 3, 2, None
+				elif cat == 'Pedestrian': 	metric, thres, min_hits, max_age, nms = 'dist',  6, 3, 2, None	
+				elif cat == 'Bicycle': 		metric, thres, min_hits, max_age, nms = 'dist',  6, 3, 2, None
+				elif cat == 'Motorcycle':	metric, thres, min_hits, max_age, nms = 'dist', 10, 3, 2, None
+				elif cat == 'Bus': 			metric, thres, min_hits, max_age, nms = 'dist', 10, 3, 2, None
+				elif cat == 'Trailer': 		metric, thres, min_hits, max_age, nms = 'dist', 10, 3, 2, None
+				elif cat == 'Truck': 		metric, thres, min_hits, max_age, nms = 'dist', 10, 3, 2, None
 				else: assert False, 'error'
 			else: assert False, 'error'
 		else: assert False, 'no such dataset'
 
 		# add negative due to it is the cost
 		if metric in ['dist_3d', 'dist_2d', 'm_dis']: thres *= -1	
-		self.algm, self.metric, self.thres, self.max_age, self.min_hits = \
-			algm, metric, thres, max_age, min_hits
+		self.algm, self.metric, self.thres, self.max_age, self.min_hits, self.nms_iou_thres = \
+			algm, metric, thres, max_age, min_hits, nms
 
 		# define max/min values for the output affinity matrix
 		if self.metric in ['dist_3d', 'dist_2d', 'm_dis']: self.max_sim, self.min_sim = 0.0, -100.
@@ -111,14 +115,18 @@ class AB3DMOT(object):
 		print_log('max age is %f' % self.max_age, log=self.log, display=False)
 		print_log('ego motion compensation is %d' % self.ego_com, log=self.log, display=False)
 
-	def process_dets(self, dets):
-		# convert each detection into the class Box3D 
+	def process_dets(self, dets, info):
+		# convert each detection into the class Box3D and provide score for NMS
 		# inputs: 
 		# 	dets - a numpy array of detections in the format [[h,w,l,x,y,z,theta],...]
+		# 	info - a numpy array of other information in the format [alpha, type, 2d box, score]
 
+		assert len(dets) == len(info), 'length is different'
 		dets_new = []
-		for det in dets:
+		for index in range(len(dets)):
+			det, info_tmp = dets[index], info[index]
 			det_tmp = Box3D.array2bbox_raw(det)
+			if self.nms: det_tmp.s = info_tmp[-1] 		# assign score for NMS process
 			dets_new.append(det_tmp)
 
 		return dets_new
@@ -392,7 +400,7 @@ class AB3DMOT(object):
 		NOTE: The number of objects returned may differ from the number of detections provided.
 		"""
 		dets, info = dets_all['dets'], dets_all['info']         # dets: N x 7, float numpy array
-		if self.debug_id: print('\nframe is %s' % frame)
+		# if self.debug_id: print('\nframe is %s' % frame)
 	
 		# logging
 		print_str = '\n\n*****************************************\n\nprocessing seq_name/frame %s/%d' % (seq_name, frame)
@@ -404,7 +412,15 @@ class AB3DMOT(object):
 		self.id_past = [trk.id for trk in self.trackers]
 
 		# process detection format
-		dets = self.process_dets(dets)
+		dets = self.process_dets(dets, info)
+
+		# apply NMS to filter highly-overlapped boxes and also remove score to maintain shape
+		if self.nms and (self.nms_iou_thres is not None):
+			num_dets = len(dets)
+			valid_index = nms(dets, self.nms_iou_thres)
+			dets = [dets[i].clear_score() for i in valid_index]; info = info[valid_index, :]
+			print_log('before NMS %s, after NMS %d' % (num_dets, len(dets)), log=self.log, display=False)
+			self.filter_count += num_dets - len(dets)
 
 		# tracks propagation based on velocity
 		trks = self.prediction()

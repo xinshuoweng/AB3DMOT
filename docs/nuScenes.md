@@ -146,7 +146,7 @@ The results will not be the same as above because there are differences in the i
 
 To visualize the qualitative results of our 3D MOT system on nuScenes, please run:
 ```
-python3 scripts/post_processing/trk_conf_threshold.py --dataset nuScenes-- result_sha megvii_val_H1
+python3 scripts/post_processing/trk_conf_threshold.py --dataset nuScenes --result_sha megvii_val_H1
 python3 scripts/post_processing/visualization.py --dataset nuScenes --result_sha megvii_val_H1_thres --split val
 ```
 

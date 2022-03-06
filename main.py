@@ -92,6 +92,11 @@ def main_per_cat(cfg, cat, log, ID_start):
 			total_frames += 1
 		seq_count += 1
 
+		# print NMS log
+		if cfg.nms:
+			print_log('No. of filtered det on %s, %s is %d with the NMS IoU thres of %.2f' % \
+				(cfg.dataset, seq_name, tracker.filter_count, tracker.nms_iou_thres), log=log)
+
 		for index in range(cfg.num_hypo): 
 			eval_file_dict[index].close()
 			ID_start = max(ID_start, tracker.ID_count[index])

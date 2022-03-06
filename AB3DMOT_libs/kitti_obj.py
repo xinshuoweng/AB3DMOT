@@ -81,7 +81,7 @@ class Object_3D(object):
         # format follows the input data, i.e., the standard MOT pre-processed data
 
         assert self.s is not None, 'error'    
-        return '%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f' % \
+        return '%d,%d,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f,%.f' % \
             (int(frame), type_id, self.xmin, self.ymin, self.xmax, self.ymax, self.s, \
             self.h, self.w, self.l, self.x, self.y, self.z, self.ry, self.alpha)
 
@@ -90,7 +90,7 @@ class Object_3D(object):
 
         assert self.s is not None, 'error'    
         assert self.id is not None, 'error'    
-        return '%d %d %s %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f' % \
+        return '%d %d %s %.f %.f %.f %.f %.f %.f %.f %.f %.f %.f %.f %.f %.f %.f %.f' % \
             (int(frame), self.id, self.type, self.trunc, self.occ, self.alpha, \
             self.xmin, self.ymin, self.xmax, self.ymax, \
             self.h, self.w, self.l, self.x, self.y, self.z, self.ry, self.s)

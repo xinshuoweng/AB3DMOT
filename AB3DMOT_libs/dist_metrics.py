@@ -62,12 +62,14 @@ def convex_hull_intersection(p1, p2):
 def compute_inter_2D(boxa_bottom, boxb_bottom):
 	# computer intersection over union of two sets of bottom corner points
 
-	_, I_2D = convex_hull_intersection(boxa_bottom, boxb_bottom)
+	# faster version, but sometimes not very accurate
+	# e.g., when two same boxes are the input, it can lead to iou > 1
+	# _, I_2D = convex_hull_intersection(boxa_bottom, boxb_bottom)
 
 	# a slower version
-	# from shapely.geometry import Polygon
-	# reca, recb = Polygon(boxa_bottom), Polygon(boxb_bottom)
-	# I_2D = reca.intersection(recb).area
+	from shapely.geometry import Polygon
+	reca, recb = Polygon(boxa_bottom), Polygon(boxb_bottom)
+	I_2D = reca.intersection(recb).area
 
 	return I_2D
 
