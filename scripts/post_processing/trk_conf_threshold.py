@@ -97,7 +97,10 @@ if __name__ == '__main__':
 	args = parse_args()
 	result_sha = args.result_sha
 	num_hypo = args.num_hypo
-	thres_dict = get_threshold(args.dataset)
+
+	# get threshold for filtering
+	det_name = result_sha.split('_')[0]
+	thres_dict = get_threshold(args.dataset, det_name)
 
 	# get directories
 	file_path = os.path.dirname(os.path.realpath(__file__))

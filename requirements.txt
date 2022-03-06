@@ -1,3 +1,4 @@
+wheel==0.37.1
 scikit-learn==0.19.2
 filterpy==1.4.5
 numba==0.43.1	

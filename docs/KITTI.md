@@ -29,14 +29,14 @@ Frame |   Type  |   2D BBOX (x1, y1, x2, y2)  | Score |    3D BBOX (h, w, l, x, 
 To run our tracker on the KITTI MOT validation set with the provided PointRCNN detections:
 
 ```
-$ python3 main.py --dataset KITTI --det_name pointrcnn
+python3 main.py --dataset KITTI --det_name pointrcnn
 ```
 
 In detail, running above command will generate a folder named "pointrcnn_val_H1" that includes results combined from all categories, and also folders named "pointrcnn_category_val_H1" representing results for each category. Under each result folder, "./data_0" subfolders are used for MOT evaluation, which follow the format of the KITTI Multi-Object Tracking Challenge (format definition can be found in the tracking development toolkit here: http://www.cvlibs.net/datasets/kitti/eval_tracking.php). Also, "./trk_withid_0" subfolders are used for visualization only, which follow the format of KITTI 3D Object Detection challenge except that we add an ID in the last column.
 
 To run our tracker on the test set with the provided PointRCNN detections, one can simply run:
 ```
-$ python3 main.py --dataset KITTI --det_name pointrcnn --split test
+python3 main.py --dataset KITTI --det_name pointrcnn --split test
 ```
 Then, the results will be saved to the "./results/KITTI/pointrcnn_test_H1" folder. 
 
@@ -44,12 +44,12 @@ Then, the results will be saved to the "./results/KITTI/pointrcnn_test_H1" folde
 
 To reproduce the quantitative **3D MOT** results of our 3D MOT system on the KITTI MOT **validation** set with a threshold of 0.25 3D IoU during evaluation, please run:
 ```
-$ python3 scripts/KITTI/evaluate.py pointrcnn_val_H1 1 3D 0.25
+python3 scripts/KITTI/evaluate.py pointrcnn_val_H1 1 3D 0.25
 ```
 Or you can use the threshold of 0.5 and 0.7 3D IoU during evaluation:
 ```
-$ python3 scripts/KITTI/evaluate.py pointrcnn_val_H1 1 3D 0.5
-$ python3 scripts/KITTI/evaluate.py pointrcnn_Car_val_H1 1 3D 0.7
+python3 scripts/KITTI/evaluate.py pointrcnn_val_H1 1 3D 0.5
+python3 scripts/KITTI/evaluate.py pointrcnn_Car_val_H1 1 3D 0.7
 ```
 
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. The overall performance is the performance averaged over three categoeries for sAMOTA, MOTA, MOTP and the summed over three categories for IDS, FRAG, FP, FN. Note that, please run the code when CPUs are not occupied by other programs otherwise you might not achieve similar speed as reported in our paper.
@@ -86,7 +86,7 @@ Note that the performance is higher than our original IROS 2020 paper due to som
 
 To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI MOT **validation** set, please run:
 ```
-$ python3 scripts/KITTI/evaluate.py pointrcnn_val_H1 1 2D 0.5
+python3 scripts/KITTI/evaluate.py pointrcnn_val_H1 1 2D 0.5
 ```
 
 Then, the results should be exactly same as below, except for the FPS which might vary across individual machines. 
@@ -102,12 +102,12 @@ Then, the results should be exactly same as below, except for the FPS which migh
 
 To reproduce the quantitative **2D MOT** results of our 3D MOT system on KITTI MOT **test set**, please run the following: 
 ```
-$ python3 scripts/post_processing/trk_conf_threshold.py --dataset KITTI --result_sha pointrcnn_test_H1
+python3 scripts/post_processing/trk_conf_threshold.py --dataset KITTI --result_sha pointrcnn_test_H1
 ```
 
 Then, compress the folder below and upload to http://www.cvlibs.net/datasets/kitti/user_submit.php for KITTI 2D MOT evaluation. Note that KITTI does not release the ground truth labels to users, so we have to use the official KITTI 2D MOT evaluation server for evaluation, which does not include our new metrics.
 ```
-$ ./results/KITTI/pointrcnn_test_H1_thres/data_0
+./results/KITTI/pointrcnn_test_H1_thres/data_0
 ```
 
 The results should be similar to our entry on the KITTI 2D MOT leaderboard (http://www.cvlibs.net/datasets/kitti/eval_tracking.php). 
@@ -116,7 +116,7 @@ The results should be similar to our entry on the KITTI 2D MOT leaderboard (http
 
 To visualize the qualitative results of our 3D MOT system on images shown in the paper (Note that the opencv3 is required by this step, please check the opencv version if there is an error):
 ```
-$ python3 scripts/post_processing/visualization.py --dataset KITTI --result_sha pointrcnn_test_H1_thres --split test
+python3 scripts/post_processing/visualization.py --dataset KITTI --result_sha pointrcnn_test_H1_thres --split test
 ```
   
 Visualization results are then saved to "./results/KITTI/pointrcnn_test_H1_thres/trk_image_vis" and "./results/KITTI/pointrcnn_test_H1_thres/trk_video_vis"

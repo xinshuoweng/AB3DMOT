@@ -26,8 +26,9 @@ def vis(args):
 	# get config
 	file_path = os.path.dirname(os.path.realpath(__file__))
 	result_sha = args.result_sha
+	det_name = result_sha.split('_')[0]
 	result_root = os.path.join(file_path, '../../results', args.dataset, result_sha)
-	score_threshold = get_threshold(args.dataset)
+	score_threshold = get_threshold(args.dataset, det_name)
 	log = os.path.join(result_root, 'vis_log.txt')
 	mkdir_if_missing(log); log = open(log, 'w')
 
@@ -55,7 +56,7 @@ def vis(args):
 
 	# loop through every sequence
 	seq_count = 0
-	for seq in seq_eval[:1]:
+	for seq in seq_eval:
 		image_dir = os.path.join(trk_root, 'image_02/%s' % seq)
 		calib_file = os.path.join(trk_root, 'calib/%s.txt' % seq)
 		result_dir = os.path.join(result_root, 'trk_withid_%d/%s' % (args.hypo_index_vis, seq))
