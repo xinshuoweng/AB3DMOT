@@ -58,15 +58,23 @@ def get_subfolder_seq(dataset, split):
 		
 	return subfolder, det_id2str, hw, seq_eval, data_root
 
-def get_threshold(dataset):
+def get_threshold(dataset, det_name):
 	# used for visualization only as we want to remove some false positives, also can be 
 	# used for KITTI 2D MOT evaluation which uses a single operating point 
 	# obtained by observing the threshold achieving the highest MOTA on the validation set
 
 	if dataset == 'KITTI':
-		return {'Car': 3.240738, 'Pedestrian': 2.683133, 'Cyclist': 3.645319}
-	else: 
-		assert False, 'error'
+		if det_name == 'pointrcnn': return {'Car': 3.240738, 'Pedestrian': 2.683133, 'Cyclist': 3.645319}
+		else: assert False, 'error, detection method not supported for getting threshold' % det_name
+	elif dataset == 'nuScenes':
+		if det_name == 'megvii': 
+			return {'Car': 0.262545, 'Pedestrian': 0.217600, 'Truck': 0.294967, 'Trailer': 0.292775, 
+					'Bus': 0.440060, 'Motorcycle': 0.314693, 'Bicycle': 0.284720}
+		if det_name == 'centerpoint': 
+			return {'Car': 0.269231, 'Pedestrian': 0.410000, 'Truck': 0.300000, 'Trailer': 0.372632, 
+					'Bus': 0.430000, 'Motorcycle': 0.368667, 'Bicycle': 0.394146}
+		else: assert False, 'error, detection method not supported for getting threshold' % det_name
+	else: assert False, 'error, dataset %s not supported for getting threshold' % dataset
 
 def initialize(cfg, data_root, save_dir, subfolder, seq_name, cat, ID_start, hw, log_file):
 	# initialize the tracker and provide all path of data needed

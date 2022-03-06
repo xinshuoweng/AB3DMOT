@@ -10,11 +10,11 @@ To run experiments on nuScenes, the following packages need to be installed:
 To install required dependencies on the virtual environment of the python, please run the following commands:
 
 ```
-$ cd path/to/AB3DMOT
-$ source env/bin/activate
-$ cd scripts/nuScenes
-$ pip3 install -r requirements.txt
-$ cd ../../
+cd path/to/AB3DMOT
+source env/bin/activate
+cd scripts/nuScenes
+pip3 install -r requirements.txt
+cd ../../
 ```
 
 ## Dataset Preparation
@@ -36,8 +36,8 @@ AB3DMOT
 
 Because our code processes data in the KITTI format, one must run the following code to convert the nuScenes raw data into the KITTI format:
 ```
-$ python3 scripts/nuScenes/export_kitti.py nuscenes_gt2kitti_trk --split val
-$ python3 scripts/nuScenes/export_kitti.py nuscenes_gt2kitti_trk --split test
+python3 scripts/nuScenes/export_kitti.py nuscenes_gt2kitti_trk --split val
+python3 scripts/nuScenes/export_kitti.py nuscenes_gt2kitti_trk --split test
 ```
 
 The above code will generate nuScenes GT data at "./data/nuScenes/nuKITTI/tracking" following the KITTI format. Please check if the data has the following structure:
@@ -66,12 +66,12 @@ Frame |   Type  |   2D BBOX (x1, y1, x2, y2)  | Score  |    3D BBOX (h, w, l, x,
  
 Note that these detection results are converted from the offcial format of the nuScenes 3D Object Detection Challenge (format definition can be found [here](https://www.nuscenes.org/object-detection/?externalData=all&mapData=all&modalities=Any)). To convert your own nuScenes detections (following nuScenes detection format) into our format, we provide the conversion code at "./scripts/nuScenes/export_kitti.py". For example, given your raw nuScenes detection file at "./data/nuScenes/data/produced/results/detection/detname/results_val.json", simply run the following:
 ```
-$ python3 scripts/nuScenes/export_kitti.py nuscenes_obj_result2kitti --result_name detname --split val
+python3 scripts/nuScenes/export_kitti.py nuscenes_obj_result2kitti --result_name detname --split val
 ```
 
 The above code will generate detection results at "./data/nuScenes/nuKITTI/object/produced/results/val/detname/data", which strictly follow the format of the KITTI object detection challenge and can be evaluated using the standard KITTI detection eval code [here](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d). Then, we need to pre-process those files into "./data/nuScenes/detection" with the following code:
 ```
-$ python3 scripts/pre_processing/convert_det2input.py --dataset nuScenes --split val --det_name detname
+python3 scripts/pre_processing/convert_det2input.py --dataset nuScenes --split val --det_name detname
 ```
 
 You will see the input files under "./data/nuScenes/detection/detname_cat_val", where cat means the category name. We split the detections into every category and also a single folder including all categories. In other words, you will see folders such as "detname_Car_val", "detname_Pedestrian_val", "detname_Truck_val", "detname_all_val", etc. These folders are ready to be used by our main.py for AB3DMOT.
@@ -80,8 +80,8 @@ You will see the input files under "./data/nuScenes/detection/detname_cat_val", 
 
 Once the data is properly prepared, everything is as easy as running for KITTI inference. For example, one can run AB3DMOT using the megvii detections on the validation set with the following command:
 ```
-$ python3 main.py --dataset nuScenes --det_name megvii --split val
-$ python3 main.py --dataset nuScenes --det_name centerpoint --split val
+python3 main.py --dataset nuScenes --det_name megvii --split val
+python3 main.py --dataset nuScenes --det_name centerpoint --split val
 ```
 Then, the results from all categories will be saved to the "./results/nuScenes/megvii_val_H1" or "./results/nuScenes/centerpoint_val_H1" folders, similar to the KITTI tracking result format as introduced [here](docs/KITTI.md). 
 
@@ -89,8 +89,8 @@ Then, the results from all categories will be saved to the "./results/nuScenes/m
 
 To reproduce the quantitative **3D MOT** results of our 3D MOT system on the nuScenes tracking **validation** set, we need to first convert the result format into the [nuScenes tracking result format](https://www.nuscenes.org/tracking/?externalData=all&mapData=all&modalities=Any) and then run the [official nuScenes MOT evaluation code](https://github.com/nutonomy/nuscenes-devkit/blob/master/python-sdk/nuscenes/eval/tracking/evaluate.py). For simplicity, we have made a local copy of the evaluation code in this repository, please run:
 ```
-$ python3 scripts/nuScenes/export_kitti.py kitti_trk_result2nuscenes --result_name megvii_val_H1 --split val
-$ python3 scripts/nuScenes/evaluate.py --result_path ./results/nuScenes/megvii_val_H1/results_val.json
+python3 scripts/nuScenes/export_kitti.py kitti_trk_result2nuscenes --result_name megvii_val_H1 --split val
+python3 scripts/nuScenes/evaluate.py --result_path ./results/nuScenes/megvii_val_H1/results_val.json
 ```
 
 Then, the results should be exactly same as below:
@@ -114,8 +114,8 @@ Note that the results are different from (actually higher than) numbers reported
 
 To reproduce the quantitative **3D MOT** results of our 3D MOT system on the nuScenes tracking **test set**, please run the following: 
 ```
-$ python3 main.py --dataset nuScenes --det_name megvii --split test
-$ python3 scripts/nuScenes/export_kitti.py kitti_trk_result2nuscenes --result_name megvii_test_H1 --split test
+python3 main.py --dataset nuScenes --det_name megvii --split test
+python3 scripts/nuScenes/export_kitti.py kitti_trk_result2nuscenes --result_name megvii_test_H1 --split test
 ```
 
 Then, compress the result file at "./results/nuScenes/megvii_test_H1/results_test.json" into a zip file and upload [here](https://eval.ai/web/challenges/challenge-page/476/submission) for official nuScenes 3D MOT evaluation. Note that nuScenes does not release the ground truth labels to users, so we have to use the official nuScenes 3D MOT evaluation server for evaluation. The results should be similar to our entry on the nuScenes 3D MOT leaderboard below:
@@ -137,7 +137,7 @@ Then, compress the result file at "./results/nuScenes/megvii_test_H1/results_tes
 
 The above evaluation process follows the same procesdure as the official nuScenes tracking evaluation, but the scripts take a long time to run. So we also provide a quick evaluation script that is adapted from KITTI evaluation. To proceed, simply run the following commands:
 ```
-$ python3 scripts/nuScenes/evaluate_quick.py megvii_val_H1 1 val
+python3 scripts/nuScenes/evaluate_quick.py megvii_val_H1 1 val
 ```
 
 The results will not be the same as above because there are differences in the implementation of the evaluation code but we do observe similar trend when using two scripts (i.e., when our method is clearly improved and get higher numbers in one evaluation code, we also obtain higher numbers when using the other evaluation code).
@@ -146,8 +146,8 @@ The results will not be the same as above because there are differences in the i
 
 To visualize the qualitative results of our 3D MOT system on nuScenes, please run:
 ```
-$ python3 scripts/post_processing/trk_conf_threshold.py --dataset nuScenes-- result_sha megvii_val_H1
-$ python3 scripts/post_processing/visualization.py --dataset nuScenes --result_sha megvii_val_H1_thres --split val
+python3 scripts/post_processing/trk_conf_threshold.py --dataset nuScenes-- result_sha megvii_val_H1
+python3 scripts/post_processing/visualization.py --dataset nuScenes --result_sha megvii_val_H1_thres --split val
 ```
 
 The first script filters out some low-score tracklets which are likely false positives. These low-score tracklets are included in the raw results because nuScenes uses sAMOTA metric for evaluation that requires all tracklets regardless of the score. After running the second script, visualization results are then saved to "./results/nuScenes/megvii_val_H1_thres/trk_image_vis" and "./results/nuScenes/megvii_val_H1_thres/trk_video_vis". Note that the opencv3 is required by this step, please check the opencv version if there is an error.
