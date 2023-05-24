@@ -69,6 +69,11 @@ python3 scripts/post_processing/visualization.py --result_sha pointrcnn_val_H1_t
 
 We provide instructions (inference, evaluation and visualization) for reproducing our method's performance on various supported datasets ([KITTI](docs/KITTI.md), [nuScenes](docs/nuScenes.md)) for benchmarking purposes. 
 
+### Real-Time Tracking in ROS
+
+Special thanks to Pardis for the development of the real-time version running in ROS. Code can be found [here](https://github.com/PardisTaghavi/real_time_tracking_AB3DMOT).
+
 ### Acknowledgement
 
 The idea of this method is inspired by "[SORT](https://github.com/abewley/sort)"
+
